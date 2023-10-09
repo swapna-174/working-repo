@@ -1,1 +1,6 @@
-Test
+EncounterFact.type NOT IN ('Travel', 'Telephone','Health Maintenance Letter','Patient Message','Scanned Document',
+'Hosiery','Committee Review','Personalization','Pharmacy Visit','Contact Moved','Group Documentation','Evaluation','Refill',
+'BPA','Photography','Orders Only','Outside Services','mwh','Consent Form','Community Orders','Resolute Professional Billing Hospital Prof Fee','mwh2',
+'History','Telemed External','Unmerge','Recurring Plan','Enrollment','Wait List','Episode Changes','Conversion Documents',
+'Device Check','Questionnaire Series Submission','Letter (Out)','Mobile Order Only','Plan of Care Documentation','Ancillary Orders','Technology Navigator','Intake','EpicOnHand Encounter','Transcribe Order','Pharmacy Note','External Contact','Evaluation'
+)
