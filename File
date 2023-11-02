@@ -5,4 +5,7 @@ EncounterFact.type NOT IN ('Travel', 'Telephone','Health Maintenance Letter','Pa
 'Device Check','Questionnaire Series Submission','Letter (Out)','Mobile Order Only','Plan of Care Documentation','Ancillary Orders','Technology Navigator','Intake','EpicOnHand Encounter','Transcribe Order','Pharmacy Note','External Contact','Evaluation'
 )
 
+
+
+"In the past, we have primarily relied on this table to select this option."
 "We were tasked with extracting patients who have selected 'Do Not Contact' as their communication preference. However, after reviewing the data in the provided tables, we have not identified any patients who meet this criteria. To further investigate, we require one or two patient examples who have chosen this preference, or it's possible that there are indeed zero patients with this criteria selected in the system."
