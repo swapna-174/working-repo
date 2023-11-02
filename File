@@ -5,9 +5,4 @@ EncounterFact.type NOT IN ('Travel', 'Telephone','Health Maintenance Letter','Pa
 'Device Check','Questionnaire Series Submission','Letter (Out)','Mobile Order Only','Plan of Care Documentation','Ancillary Orders','Technology Navigator','Intake','EpicOnHand Encounter','Transcribe Order','Pharmacy Note','External Contact','Evaluation'
 )
 
-
-I plan to Jessiner peel this weekend. Should I stop using the serum 15 prior to the peel?.Also what is the best time to apply Serum 15 AM or PM 
-
-
-https://emis.fa.us2.oraclecloud.com/hcmUI/faces/FndOverview?fndDetailsMode=true&fnd=%252FWEB-INF%252Foracle%252Fapps%252Fhcm%252Frecruiting%252FinternalCandExp%252Fjobs%252FpublicUi%252Fresponsive%252Fflow%252FJobDetailsFlow.xml%2523JobDetailsFlow%3BpIsPreviewMode%253DN%253BpCalledFrom%253DFUSESHELL%253BpCallType%253DVBCS_TF%253BpRequisitionNo%253D97581%3B%3B%3B%3B%3B%3B%3B&pageParams=returnFndUrl%3Dhttps%3A%2F%2Femis.fa.us2.oraclecloud.com%2FfscmUI%2Fredwood%2Finternalmobility%3BfndDetailsMode%3Dtrue&_adf.ctrl-state=1aecpvvzar_6&_adf.no-new-window-redirect=true&_afrLoop=23625538096579324&_afrWindowMode=2&_afrWindowId=null&_afrFS=16&_afrMT=screen&_afrMFW=1280&_afrMFH=571&_afrMFDW=1280&_afrMFDH=720&_afrMFC=8&_afrMFCI=0&_afrMFM=0&_afrMFR=144&_afrMFG=0&_afrMFS=0&_afrMFO=0
-"We looked at the option below, but none of the tables have the information we are looking for."
+"We were tasked with extracting patients who have selected 'Do Not Contact' as their communication preference. However, after reviewing the data in the provided tables, we have not identified any patients who meet this criteria. To further investigate, we require one or two patient examples who have chosen this preference, or it's possible that there are indeed zero patients with this criteria selected in the system."
