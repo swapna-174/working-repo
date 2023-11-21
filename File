@@ -12,3 +12,12 @@ EncounterFact.type NOT IN ('Travel', 'Telephone','Health Maintenance Letter','Pa
 
 
 Attached, please find the updated version of my Individual Development Plan
+
+
+
+
+"I've listed the Patient Types below. Could you please advise on what should be included in the exclusion list for the Data Mart?"
+
+"The Patient Types are outlined below. Let me know which ones should be part of the exclusion list in the Data Mart."
+
+"Take a look at the Patient Types provided. Share your recommendations for additions to the exclusion list in the Data Mart."
