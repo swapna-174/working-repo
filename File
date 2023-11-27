@@ -15,3 +15,90 @@ Attached, please find the updated version of my Individual Development Plan
 
 
 Do we have this information in the patient chart? If you can provide me with an example, that would be helpful."
+
+
+
+USE [Warehouse_Stage_DEV]
+GO
+
+/****** Object:  StoredProcedure [Custom].[UpdatePatientDimRecDeathDateColumn_X]    Script Date: 1/3/2023 8:49:43 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+/************************************************* 
+** Author: Swapna Boga
+** Name: AH_UpdatePatientDim_RecDeathDateColumn
+** Description: Load/Update the AH custom columns in PatientDim
+** Parameters:  NONE
+** Test Run:  
+** Revisions: 
+*************************************************/
+CREATE OR ALTER       
+PROCEDURE [Custom].[UpdatePatientDimRecDeathDateColumn_X]
+AS BEGIN 
+DECLARE  @sReportingDatabaseName NVARCHAR(50)
+,@LastSuccessDate datetime
+,@PackageName nvarchar(MAX)
+,@sStagingDatabaseName NVARCHAR(50) 
+	, @sQuery NVARCHAR(MAX)	
+	SET @PackageName = N'AH_UpdatePatientDim_RecDeathDateColumn'
+	SET @sReportingDatabaseName = Epic.GetConfigurationValue(N'ReportingDatabaseName'); --Gets the configured database name dynamically for the current environemnt
+		SET @sStagingDatabaseName = Epic.GetConfigurationValue(N'StagingDatabaseName'); --Gets the configured staging database name dynamicall for the current environment
+SET @sQuery =N'
+WITH Pt_Cohort as 
+(
+select PatientDim.DurableKey
+from ' + @sReportingDatabaseName + N'.dbo.[PatientDim]
+where PatientDim.status in (''Deceased'', ''*Unknown'') 
+---and PatientDim.BirthDate > DateAdd("YYYY",-100, YEAR(CURRENT_TIMESTAMP))
+ and   PatientDim.IsCurrent = 1
+ and PatientDim.ReconciledDeathDate_X!= PatientDim.DeathDate
+ UNION
+select PatientDim.DurableKey
+From '+ @sReportingDatabaseName + N'.dbo.PatientDim  
+ where PatientDim.status in (''Deceased'', ''*Unknown'')
+--- and PatientDim.BirthDate > DateAdd("YYYY",-100, YEAR(CURRENT_TIMESTAMP))
+and PatientDim.DeathInstant is not null
+and PatientDim.IsCurrent = 1
+and PatientDim.ReconciledDeathDate_X != PatientDim.DeathDate
+),
+
+
+Pt_Cohort_With_MIN_Encntr_StartDate as 
+(
+select 
+  p1.DurableKey
+,MIN(EncounterFact.Date ) MIN_StartDate
+from Pt_Cohort p1
+join  ' + @sReportingDatabaseName +  N'.dbo.EncounterFact 
+  on p1.DurableKey = EncounterFact.PatientDurableKey
+group by 
+  p1.DurableKey
+)
+
+Update PatientDim
+ set ReconciledDeathDate_X= CASE
+   WHEN (PatientDim.Status = ''Alive'') THEN
+       CASE 
+             WHEN (CAST(PatientDim.DeathDate as date ) 
+			 < pe1.MIN_StartDate) then NULL 
+             Else  PatientDim.DeathDate  
+        END  
+   ELSE PatientDim.DeathDate 
+  END 
+
+from Pt_Cohort_With_MIN_Encntr_StartDate pe1
+join ' + @sReportingDatabaseName + N'.dbo.PatientDim  on PatientDim.DurableKey = pe1.DurableKey ;';
+EXECUTE Epic.ExecuteSql @sQuery;
+
+END 
+GO
+
+
+
