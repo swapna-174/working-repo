@@ -1,152 +1,29 @@
-with db_appt as
-(
-select
-v_sched_appt.pat_enc_csn_id
-,v_sched_appt.prc_name appt_type
-,v_sched_appt.prc_id appt_type_id
-,patient.pat_id
-,patient.pat_mrn_id
-,patient.pat_name
-,date_dimension_appt_sched.calendar_dt appt_date
-,concat(coalesce(clarity_ser_appt_sched.prov_name, '*Unknown provider'),concat(' [',concat(clarity_ser_appt_sched.prov_id,']'))) appt_prov
-,coalesce(clarity_dep_appt_sched.department_name,concat('*Unknown department [', concat(clarity_dep_appt_sched.department_id, ']'))) appt_dept
-,pay1.payor_name payor1
-,pay2.payor_name payor2
-,race.name race
-,lang.name lan
-,eth.name eth
-,coalesce(dxh.dx1,dx.dx1) dx1
-,coalesce(dxh.dx2,dx.dx2) dx2
-from
-clarity_dep clarity_dep_appt_sched 
-inner join pat_enc_appt on (pat_enc_appt.department_id=clarity_dep_appt_sched.department_id)
-inner join v_sched_appt on (v_sched_appt.pat_enc_csn_id=pat_enc_appt.pat_enc_csn_id)
-inner join date_dimension  date_dimension_appt_sched on (v_sched_appt.contact_date=date_dimension_appt_sched.calendar_dt)
-inner join patient on (patient.pat_id=v_sched_appt.pat_id)
-inner join clarity_ser  clarity_ser_appt_sched on (pat_enc_appt.prov_id=clarity_ser_appt_sched.prov_id)
-left join patient_race r on patient.pat_id=r.pat_id     
-left join zc_patient_race race on r.patient_race_c=race.patient_race_c
-left join zc_language lang on patient.language_c=lang.language_c
-left join zc_ethnic_group eth on patient.ethnic_group_c=eth.ethnic_group_c
-left join (
-            select
-            har.prim_enc_csn_id
-            ,max(case when cvgl.line=1 then cvg.payor_id end) payor_id1 
-            ,max(case when cvgl.line=2 then cvg.payor_id end) payor_id2 
-            from 
-            hsp_acct_cvg_list cvgl
-            inner join hsp_account har on cvgl.hsp_account_id=har.hsp_account_id
-            left join coverage cvg on cvgl.coverage_id=cvg.coverage_id
-            group by har.prim_enc_csn_id) cvg on pat_enc_appt.pat_enc_csn_id=cvg.prim_enc_csn_id
-left join clarity_epm pay1 on cvg.payor_id1=pay1.payor_id
-left join clarity_epm pay2 on cvg.payor_id2=pay2.payor_id
-left join (
-            select
-            dx.pat_enc_csn_id
-            ,max(case when dx.line=1 then edg.dx_name end) dx1
-            ,max(case when dx.line=2 then edg.dx_name end) dx2
-            from 
-            pat_enc_dx dx
-            left join clarity_edg edg on dx.dx_id=edg.dx_id 
-            group by
-            dx.pat_enc_csn_id) dx on v_sched_appt.pat_enc_csn_id=dx.pat_enc_csn_id
-left join (
-            select
-            har.prim_enc_csn_id
-            ,max(case when dx.line=1 then edg.dx_name end) dx1
-            ,max(case when dx.line=2 then edg.dx_name end) dx2
-            from 
-            hsp_acct_dx_list dx
-            inner join hsp_account har on dx.hsp_account_id=har.hsp_account_id
-            left join clarity_edg edg on dx.dx_id=edg.dx_id 
-            group by
-            har.prim_enc_csn_id) dxh on v_sched_appt.pat_enc_csn_id=dxh.prim_enc_csn_id
-where clarity_dep_appt_sched.department_id in (1009501006,1004001024,1001601001,1008301039,1009501002)            --  DHP DIABETES EDUCATION    DIACCDHP            SHPST 01 DIABETES EDUCATION AT CFCC DIASHPST                    CC610 02 DIABETES EDUCATION DIACC610
-and date_dimension_appt_sched.calendar_dt  between '19mar2016' and '19mar2017'
---and date_dimension_appt_sched.calendar_dt between epic_util.efn_din('{?Start Date}') and epic_util.efn_din('{?End Date}')
---and v_sched_appt.prc_id  IN ('873')
-and v_sched_appt.appt_status_c=2)
+ SELECT
+ *
+ FROM
+  (
 
-, a1c_results as
-(select distinct
-db_hx.pat_id
-,db_hx.hba1c_last_dt
-,db_hx.hba1c_last
-from 
-db_appt
-inner join dm_diabetes_hx db_hx on db_appt.pat_id=db_hx.pat_id
-)
+	SELECT
+	* 
+	FROM 
+	
+       (
+       SELECT
+		res.PAT_ID 
+		,cc.COMPONENT_ID
+		,cc.NAME
+	   ,res.ORD_VALUE
+--		,res.RESULT_DATE
+		,res.RESULT_TIME
+	    ,rank() over ( partition by res.PAT_ID order by res.PAT_ID,res.RESULT_TIME desc,RowNum) rank
 
-, pre as 
-(select
-db_appt.pat_id
-,db_appt.pat_enc_csn_id
-,a1c_results.hba1c_last_dt a1c_pre_date
-,replace(a1c_results.hba1c_last,'%','') a1c_pre_value
-from
-db_appt
-inner join a1c_results on db_appt.pat_id=a1c_results.pat_id 
-where 
-a1c_results.hba1c_last_dt=(select max(a1c_results.hba1c_last_dt) from a1c_results where a1c_results.hba1c_last_dt<=db_appt.appt_date and a1c_results.pat_id=db_appt.pat_id and a1c_results.hba1c_last is not null)
-)
-
-, post as 
-(select
-db_appt.pat_id
-,a1c_results.hba1c_last_dt a1c_post_date
-,replace(a1c_results.hba1c_last,'%','') a1c_post_value
-,RANK() OVER (PARTITION BY pat_enc_csn_id ORDER BY hba1c_last_dt) r
-from
-db_appt
-inner join a1c_results on db_appt.pat_id=a1c_results.pat_id 
-where 
-a1c_results.hba1c_last_dt>=(select min(a1c_results.hba1c_last_dt) from a1c_results where a1c_results.hba1c_last_dt>=db_appt.appt_date and a1c_results.pat_id=db_appt.pat_id and a1c_results.hba1c_last is not null)
-)
-
-select
-db_appt.appt_type
-,db_appt.pat_mrn_id
-,db_appt.pat_enc_csn_id -----------------
-,db_appt.pat_name
-,db_appt.appt_date
-,db_appt.appt_dept
-,db_appt.appt_prov
-,pre.a1c_pre_date
-,pre.a1c_pre_value
-,max(case when r=1 then post.a1c_post_date end) a1c_post_date_1
-,max(case when r=1 then post.a1c_post_value end) a1c_post_value_1
-,max(case when r=2 then post.a1c_post_date end) a1c_post_date_2
-,max(case when r=2 then post.a1c_post_value end) a1c_post_value_2
-,max(case when r=3 then post.a1c_post_date end) a1c_post_date_3
-,max(case when r=3 then post.a1c_post_value end) a1c_post_value_3
-,db_appt.payor1
-,db_appt.payor2
-,db_appt.race
-,db_appt.lan
-,db_appt.eth
-,db_appt.dx1
-,db_appt.dx2
-from
-db_appt
-left join pre on db_appt.pat_id=pre.pat_id and db_appt.pat_enc_csn_id = pre.pat_enc_csn_id
-left join post on db_appt.pat_id=post.pat_id
-where
-pre.a1c_pre_value is not null
-and post.a1c_post_value is not null
-group by
-db_appt.appt_type
-,db_appt.pat_mrn_id
-,db_appt.pat_enc_csn_id -----------------
-,db_appt.pat_name
-,db_appt.appt_date
-,db_appt.appt_dept
-,db_appt.appt_prov
-,pre.a1c_pre_date
-,pre.a1c_pre_value
-,db_appt.payor1
-,db_appt.payor2
-,db_appt.race
-,db_appt.lan
-,db_appt.eth
-,db_appt.dx1
-,db_appt.dx2
+		 FROM CLARITY_COMPONENT cc
+		 INNER JOIN ORDER_RESULTS res ON res.COMPONENT_ID = cc.COMPONENT_ID
+		WHERE cc.NAME LIKE '%A1C%'
+--		AND res.PAT_ID = 'Z1610573'
+		  
+	  )
+		
+   	where rank <= 3
+   	ORDER BY rank, PAT_ID
+	   	
