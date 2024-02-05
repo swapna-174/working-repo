@@ -1,1 +1,1 @@
-Confidential patients are restricted. We would need to provide a user ID and password in order to review the chart (Break the Glass). Here is one example.
+"Happy Monday! Attached is documentation for the new data mart and related DX codes. Please let me know if the team wants me to walk through the table attributes. All the columns are binary and return 1 if the patient qualifies, 0 if they do not.
