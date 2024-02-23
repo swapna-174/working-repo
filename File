@@ -1,1 +1,1 @@
-Thanks for meeting with us and going over the needs assessments. Attached is the initial dataset for DB-1311 & IMGN151 studies – please find below the links to each initial dataset: Please review and let me know in case of any questions
+We plan to create DM tables in the stage RDSC schema and load custom data. What are the steps that we need to follow? Need to know more about the service account that needs no authentication, and we also plan to run it every day around 6 am
