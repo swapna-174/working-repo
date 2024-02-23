@@ -1,1 +1,1 @@
-We plan to create DM tables in the stage RDSC schema and load custom data. What are the steps that we need to follow? Need to know more about the service account that needs no authentication, and we also plan to run it every day around 6 am
+These tables would eventually help the team standardize some of the common procedures and diagnoses used for the report extract, and also improve the performance of the overall queries.
