@@ -1,1 +1,2 @@
-These tables would eventually help the team standardize some of the common procedures and diagnoses used for the report extract, and also improve the performance of the overall queries.
+"Here are the tables that hold information about patient vitals and recent lab results."
+I had to exclude the historical and interface-only encounters since they do not contain any information about patient vitals."
