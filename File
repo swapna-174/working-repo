@@ -1,2 +1,2 @@
-"Here are the tables that hold information about patient vitals and recent lab results."
-I had to exclude the historical and interface-only encounters since they do not contain any information about patient vitals."
+"Here is the table in the production work schema. I was asked to remove the double quotes (Varchar standards, not the column naming standards) and rename the columns to what they represent."
+All the builds will be done in the Stage schema and then moved to Production
