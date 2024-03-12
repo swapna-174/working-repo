@@ -1,4 +1,1 @@
-"Here is the table in the production work schema. I was asked to remove the double quotes (Varchar standards, not the column naming standards) and rename the columns to what they represent."
-All the builds will be done in the Stage schema and then moved to Production
-
-Here is the table in the production work schema. I was asked to remove the double quotes (Varchar standards, not the column naming standards) and rename the columns to represent their respective attributes
+Apologies, it appears that some test patient data was included in the extract. These patients won't be searchable in Epic. I have excluded the test patients and uploaded a new file
