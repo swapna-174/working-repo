@@ -1,1 +1,12 @@
-Please check with the requestor if they can provide us with the MRN, LabName, and Component Details. We can then check if any lab tables in Caboodle have this information."
+
+SELECT *FROM caboodle.BillingAccountFact
+LEFT JOIN caboodle.ProcedureBridge ON BillingAccountFact.IcdProcedureComboKey = ProcedureBridge.ProcedureComboKey
+LEFT JOIN caboodle.ProcedureDim ON ProcedureDurableKey =ProcedureDim.durablekey
+LEFT JOIN caboodle.patientdim ON BillingAccountFact.patientdurablekey=patientdim.durablekey
+LEFT JOIN caboodle.CoverageDim ON BillingAccountFact. FirstCoverageKey=CoverageDim.CoverageKey
+
+where ProcedureDim.code IN (
+ 
+ '58150',
+ '58152',
+ '58260')
