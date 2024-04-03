@@ -1,12 +1,1 @@
-
-SELECT *FROM caboodle.BillingAccountFact
-LEFT JOIN caboodle.ProcedureBridge ON BillingAccountFact.IcdProcedureComboKey = ProcedureBridge.ProcedureComboKey
-LEFT JOIN caboodle.ProcedureDim ON ProcedureDurableKey =ProcedureDim.durablekey
-LEFT JOIN caboodle.patientdim ON BillingAccountFact.patientdurablekey=patientdim.durablekey
-LEFT JOIN caboodle.CoverageDim ON BillingAccountFact. FirstCoverageKey=CoverageDim.CoverageKey
-
-where ProcedureDim.code IN (
- 
- '58150',
- '58152',
- '58260')
+We are currently working on a provider request to extract data for various tumor sites. While we do not have specific patient examples at this time, we are aware that there were a couple of patients who had their tumors removed, and the specimens were subsequently stored at IronMountain. We are now requesting data retrieval, such as the location, Container ID, and Date of Storage. This data will assist researchers in further analysis for their research projects.
