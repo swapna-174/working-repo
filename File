@@ -12,5 +12,5 @@ left join  clarity.zc_license_usrtype on clarity_emp.license_usrtype_c=zc_licens
 left join  clarity.zc_ar_dflt_faclty  on clarity_emp_ar_sa.pb_fac_c=zc_ar_dflt_faclty.ar_dflt_faclty_c
  where  clarity_emp_2.user_id='BSEVERS' 
 
-
+hallenging aspect might involve dealing with obstacles, whether they're technical, interpersonal, or organizational.
  opportunity to solve complex problems and contribute to projects that have a tangible impact on the organization or end-users.
