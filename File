@@ -1,8 +1,8 @@
-Shelly,
-Is this information related to the location of the tumor samples stored in Iron Mountain?
+select zc_license_usrtype.Name licenseusertypeName ,zc_ar_dflt_faclty.Name facltyName ,	clarity_ecl.CLASSIFCTN_NAME securityClassName  
+from clarity.clarity_emp
+left join  clarity.clarity_emp_2 on clarity_emp.user_id=clarity_emp.user_id
+left join clarity.clarity_emp_ar_sa on clarity_emp_ar_sa.user_id=clarity_emp.user_id
+left join  clarity.clarity_ecl on clarity_emp.roi_dflt_ecl_id=clarity_ecl.ecl_id
+left join  clarity.zc_license_usrtype on clarity_emp.license_usrtype_c=zc_license_usrtype.license_usrtype_c
+left join  clarity.zc_ar_dflt_faclty  on clarity_emp_ar_sa.pb_fac_c=zc_ar_dflt_faclty.ar_dflt_faclty_c
 
-Once we have the researcher's availability, I will inform you so that we can include the requester of this data in the meeting as well
-
-
-
-"Checking to see if the provided data met your needs. Do you have any additional questions for our team?
