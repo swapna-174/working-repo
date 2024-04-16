@@ -1,8 +1,13 @@
-select zc_license_usrtype.Name licenseusertypeName ,zc_ar_dflt_faclty.Name facltyName ,	clarity_ecl.CLASSIFCTN_NAME securityClassName  
-from clarity.clarity_emp
-left join  clarity.clarity_emp_2 on clarity_emp.user_id=clarity_emp.user_id
-left join clarity.clarity_emp_ar_sa on clarity_emp_ar_sa.user_id=clarity_emp.user_id
+select clarity_emp.user_id,clarity_ecl.CLASSIFCTN_NAME ReleaseofInformationsecurity  ,
+zc_license_usrtype.Name licenseusertypeName ,
+zc_ar_dflt_faclty.Name facltyName ,	
+SEC_ECL.CLASSIFCTN_NAME HaikuSecurityClass 
+from clarity_emp_2
+left join  clarity.clarity_ecl SEC_ECL on clarity_emp_2.HKU_SEC_CLASS_ID=SEC_ECL.ecl_id 
+
+left join  clarity.clarity_emp on clarity_emp_2.user_id=clarity_emp.user_id
 left join  clarity.clarity_ecl on clarity_emp.roi_dflt_ecl_id=clarity_ecl.ecl_id
+left join clarity.clarity_emp_ar_sa on clarity_emp_ar_sa.user_id=clarity_emp.user_id
 left join  clarity.zc_license_usrtype on clarity_emp.license_usrtype_c=zc_license_usrtype.license_usrtype_c
 left join  clarity.zc_ar_dflt_faclty  on clarity_emp_ar_sa.pb_fac_c=zc_ar_dflt_faclty.ar_dflt_faclty_c
-
+ where  clarity_emp_2.user_id='BSEVERS' 
