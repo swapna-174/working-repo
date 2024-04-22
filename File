@@ -1,1 +1,3 @@
-utomated several lengthy processes for the team, making it easier for everyone to handle their daily data extractions
+"As discussed earlier, I have blocked some time to discuss further the creation of the ADF workflow based on the Patient list import for the  for the TRI project."
+This includes importing the .csv file into the staging table and  performing fuzzy matching algorithm based on the existing patient data list in TRI tables.
+Also, please include the MRN if the patient exists in Epic's Patient table."
