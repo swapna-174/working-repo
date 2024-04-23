@@ -1,3 +1,1 @@
-As we discussed  earlier, I blocked some time to discuss further the creation of the ADF workflow based on the Patient list import for the CTMS project.
-This includes importing the .csv file into the staging table and performing a fuzzy matching algorithm based on the existing patient data list in CTMS tables.
-Also, please include the MRN if the patient exists in Epic's Patient table.
+As per our prior discussion, I've allocated some time to delve deeper into crafting the ADF workflow centered around importing the Patient list for the CTMS project. This entails importing the .csv file into the staging table and executing a fuzzy matching algorithm against the current patient data in the CTMS tables. Additionally, please ensure inclusion of the MRN if the patient is present in Epic's Patient table.
