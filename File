@@ -1,3 +1,3 @@
-"As discussed earlier, I have blocked some time to discuss further the creation of the ADF workflow based on the Patient list import for the  for the TRI project."
-This includes importing the .csv file into the staging table and  performing fuzzy matching algorithm based on the existing patient data list in TRI tables.
-Also, please include the MRN if the patient exists in Epic's Patient table."
+As we discussed  earlier, I blocked some time to discuss further the creation of the ADF workflow based on the Patient list import for the CTMS project.
+This includes importing the .csv file into the staging table and performing a fuzzy matching algorithm based on the existing patient data list in CTMS tables.
+Also, please include the MRN if the patient exists in Epic's Patient table.
