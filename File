@@ -1,1 +1,14 @@
-As per our prior discussion, I've allocated some time to delve deeper into crafting the ADF workflow centered around importing the Patient list for the CTMS project. This entails importing the .csv file into the staging table and executing a fuzzy matching algorithm against the current patient data in the CTMS tables. Additionally, please ensure inclusion of the MRN if the patient is present in Epic's Patient table.
+SELECT *FROM 
+clarity.IP_EPISODE_LINK LINK--episodes linked to an inpatient encounter
+
+LEFT JOIN Clarity.CAREPLAN_INFO INFO1 ON --Linked CAre PLAN 
+LINK.CARE_INTG_ID=INFO1.CARE_INTG_ID
+LEFT JOIN EPISODE_LINK_HX HX 
+ON LINK.PAT_ENC_CSN_ID=HX.EPISODE_LINK_CSN
+LEFT  JOIN clarity.OB_HSB_DELIVERY  DELIVERY 
+ON DELIVERY.SUMMARY_BLOCK_ID =LINK.EPISODE_ID
+
+LEFT JOIN clarity.PAT_ENC ON LINK.INP_CSN=PAT_ENC.PAT_ENC_CSN_ID
+LEFT JOIN  clarity.PATIENT ON PAT_ENC.PAT_ID=PATIENT.PAT_ID
+
+WHERE LINK.EPISODE_ID =500187934558 AND EPISODE_LINK_INI='EPT'
