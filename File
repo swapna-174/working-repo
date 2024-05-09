@@ -1,1 +1,30 @@
 Happy Thursday! Confirmed with Epic EpisodeFact table in Caboodle that it excludes Obstetrics episodes. So, if we want to include all the Stork and Obstetrics episodes, we would consider using the IP_EPISODE_LINK or use EPISODE_ALL, which includes all the episodes, categories, and care plans associated with them
+
+EG: Obstetrics,Acute Care,Transplant,Oncology - Chemotherapy, Oncology - Supportive Care
+7 - Oncology - Follow-up
+8 - Home Health
+9 - Hospice
+10 - Obstetrics - Delivery
+11 - Blood and Marrow Transplant
+12 - Traveler
+13 - Obstetrics History
+14 - Obstetrics - Delivery History
+15 - Patient Administrative Pathway
+16 - Billing
+17 - Long Term Care
+18 - Beacon - Treatment Plan
+19 - Therapy Plan
+20 - Mechanical Circulatory Support
+21 - Patient-Entered Data (Storage)
+22 - Patient-Entered Data (View)
+23 - Immune Effector Cell Therapy
+24 - Fertility
+25 - ALS (Amyotrophic Lateral Sclerosis)
+26 - Patient Administrative Pathway Parent
+27 - Behavioral Health
+28 - Care Path
+29 - Care/Case Management
+30 - Specialty Pharmacy
+31 - Radiation Therapy
+32 - Research
+
