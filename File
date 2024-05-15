@@ -1,1 +1,19 @@
-"Hope you're doing well. I'm reaching out to inquire if there have been any updates regarding the sample tumors that Josh requested."
+---select *from providerdim where Name like '%Anderson%' and  EmployeeEpicId like 'arjander%'
+
+
+select distinct 
+patientdim.primarymrn ,
+patientdim.name PatientName  ,
+patientdim.FirstName PatientName  ,
+patientdim.BirthDate  BirthDate,
+ Patientdim.Address   Address,
+Patientdim.City	,
+ Patientdim.County,
+ Patientdim.StateOrProvince,	
+Patientdim.PostalCode	,
+providerdim.Name
+ from encounterfact 
+join  patientdim on encounterfact.patientdurablekey=patientdim.durablekey
+join  providerdim on encounterfact.ProviderDurableKey=providerdim.durablekey
+where ProviderDurablekey=704300 and Date  between '04-01-2022' and  '03-01-2024'
+and patientdim.iscurrent=1
