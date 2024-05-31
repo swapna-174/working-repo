@@ -1,1 +1,68 @@
-Good morning, Haneesh! I hope you had a pleasant long weekend. Could you clarify the intent behind the EAP extract? Based on my initial analysis, it seems that most of the data points in the EAP extract align with the current data in Epic and the spreadsheet. Are we aiming to gather the same data points?
+select * 
+FROM
+clarity.clarity_eap  
+left join  clarity.eap_map eap_map on clarity_eap.proc_id = eap_map.cid--- to get the .1 record
+left join clarity.zc_del_status on clarity_eap.record_state_eap_c =zc_del_status.del_status_c--record status
+left join clarity.clarity_eap_ot  clarity_eap_ot on clarity_eap.proc_id = clarity_eap_ot.proc_id----- contact type30
+left join clarity.zc_eap_cont_type  zc_eap_cont_type on clarity_eap_ot.contact_type_c =zc_eap_cont_type.contact_type_c---contact type30
+left join clarity.clarity_eap_4 clarity_eap_4 on clarity_eap.proc_id =clarity_eap_4.proc_id---procedure abbreviation
+left join clarity.edp_proc_cat_info edp_proc_cat_info on clarity_eap.proc_cat_id on edp_proc_cat_info.proc_cat_info--category record name
+left join clarity.edp_map  edp_map  on edp_proc_cat_info.proc_cat_id = edp_map.cid
+left join clarity.clarity_epg clarity_epg  on clarity_edg.proc_group_id = clarity_epg.proc_group_id---group record name
+left join clarity.epg_map epg_map on eap.proc_group_id = epg_map.cid
+left join clarity.clarity_eap_3 clarity_eap_3 on clarity_eap.proc_id =clarity_eap_3.proc_id
+left join clarity.zc_procedure_type zc_procedure_type on clarity_eap.type_c =zc_procedure_type.proc_type
+left join clarity.eap_synonyms eap_synonyms on clarity_eap.proc_id =eap_synonyms.proc_id --synonyms
+left join clarity.clarity_eap_altcod clarity_eap_altcod  on clarity_eap.proc_id = clarity_eap_altcod.proc_id ---alt proc provider type
+left join clarity.zc_note_ser  zc_note_ser  on clarity_eap.alt_by_prov_typ_c = zc_note_ser.service_type_c  ---alt proc provider type
+left join clarity.zc_code_type zc_code_type on clarity_eap_ot.code_type_c =zc_procedure_type.code_type_c--code_type
+left join clarity.identity_eap_id  identity_eap_id on clarity_eap.proc_id =identity_eap_id.identity_type_id---mpi id type
+left join clarity.iit_map  iit_map on identity_eap_id.identity_type_id=iit_map.cid
+left join clarity.identity_id_type  identity_id_type on identity_eap_id.identity_type_id =identity_id_type.id_type
+left join clarity.linked_performable linked_performable   on clarity_eap.proc_id = linked_performable.proc_id----linked performa
+left join clarity.zc_dflt_spec_type  zc_dflt_spec_type on clarity_eap.dflt_spec_type_c =zc_dflt_spec_type.dflt_spec_type_c  --default ---specimentype
+left join clarity.clarity_eap eap_chargeables  on eap_chargeables.proc_id = linked_chargeables.linked_chrg_id
+left join clarity.zc_perform_lnk_typ zc_perform_lnk_typ on linked_performable.perform_link_type_c =zc_procedure_type.perform_link_type_c
+left join clarity.linked_chargeables linked_chargeables  on clarity_eap.proc_id = linked_chargeables.proc_id
+left join clarity.zc_chrg_link_type  zc_chrg_link_type on linked_chargeables.chrg_link_type_c =zc_chrg_link_type.chrg_link_type_c
+left join clarity.cl_eap_ord_ques_id  cl_eap_ord_ques_id on clarity_eap.proc_id =cl_eap_ord_ques_id.proc_id ---outpatient question
+left join  clarity.cl_qquest on cl_eap_ord_ques_id.order_question_id=cl_qquest.quest_id--outpatient question record name
+left join clarity.lql_map on cl_qquest.quest_id=lql_map.cid---.1 record
+left join  clarity.cl_eap_ip_ord_ques on  clarity_eap.proc_id = cl_eap_ip_ord_ques.proc_id
+left join clarity.cl_qquest  cl_qquest_ip on cl_eap__ip_ord_ques.ip_order_quest_id=cl_qquest_ip.quest_id --ip questions
+left join clarity.lql_map ip_map  on cl_qquest_ip.quest_id=ip_map.cid--ip questions.1
+left join  clarity.zc_show_med_ordr_d on clarity_eap.show_ord_detail_c=zc_show_med_ordr_d.show_med_ordr_d_c---10350
+left join  clarity.eap_amb_ques_rem on clarity_eap.proc_id=eap_amb_ques_rem.proc_id--op question removed in otl
+left join clarity.cl_qquest rem_cl_qquest_ip on eap_amb_ques_rem.amb_ques_removed_id=rem_cl_qquest_ip.quest_id
+left join clarity.lql_map lql_rem_map  on rem_cl_qquest_ip.quest_id=lql_rem_map.cid
+left join  clarity.eap_amb_ques_add on clarity_eap.proc_id=eap_amb_ques_add.proc_id---op question added in otl record name
+left join clarity.cl_qquest add_cl_qquest on amb_ques_added_id.amb_ques_added_id=add_cl_qquest.quest_id
+left join clarity.lql_map lql_add_map  on add_cl_qquest.quest_id=lql_add_map.cid
+left join clarity.eap_ip_ques_rem on clarity_eap.proc_id=eap_ip_ques_rem.proc_id--ip question removed in otl
+left join clarity.cl_qquest ip_cl_qquest on eap_ip_ques_rem.ip_ques_removed_id=ip_cl_qquest.quest_id
+left join clarity.lql_map lql_rem_ip_removed  on ip_cl_qquest.quest_id=lql_rem_ip_removed.cid
+left join  clarity.eap_ip_ques_add on clarity_eap.proc_id=eap_ip_ques_add.proc_id--ip question added in otl
+left join clarity.cl_qquest lql_rem_ip_added on eap_ip_ques_add.ip_ques_added_id=lql_rem_ip_added.quest_id
+left join clarity.lql_map lql_add_ip_map  on add_cl_qquest.quest_id=lql_add_ip_map.cid
+left join clarity.proc_specimen_src on j on clarity_eap.proc_id=proc_specimen_src.proc_id-----specimen source default
+left join clarity.zc_spec_source on proc_specimen_src.specimen_source_c =zc_spec_source.spec_source_c
+left join clarity.zc_spec_source male_spec_source on clarity_eap.dlft_spec_src_mal_c=male_spec_source.spec_source_c
+left join clarity.zc_spec_source female_spec_source on clarity_eap.dlft_spec_src_fem_c=female_spec_source.spec_source_c
+left join clarity.proc_allowed_freq proc_allowed_freq on clarity_eap.proc_id=proc_allowed_freq.proc_id
+left join clarity.ip_frequency on proc_allowed_freq.allowed_freq_id =ip_frequency.freq_id ---allowed freq
+left join clarity.efq_map efq_map  on ip_frequency.feq_id=efq_map.cid---no efq map table
+left join clarity.clarity_eap_2 on clarity_eap.proc_id=clarity_eap_2.proc_id
+left join clarity.ip_frequency default_freq on clarity_eap.dflt_inter_id =default_freq.freq_id
+left join clarity.efq_map default_efq_map  on default_freq.freq_id=default_efq_map.cid---default freq record name
+left join  clarity.zc_result_rpt_type  on clarity_eap_2.result_rpt_type_c=zc_result_rpt_type.result_rpt_type_c
+left join clarity.eap_ord_comp_confi  on clarity_eap.proc_id=eap_ord_comp_confi.proc_id----order composer contexts
+left join clarity.zc_ctx_disp_items on eap_ord_comp_confi.proc_conf_cntxt_c=zc_ctx_disp_items.ctx_disp_items_c
+left join clarity.occ_contexts	on	eap_ord_comp_confi.px_ord_comp_cfg_id=occ_contexts.record_id---order composer configurations
+left join clarity.occ_map on eap_ord_comp_confi.px_ord_comp_cfg_id=occ_map.cid--order composer configurations record name
+left join clarity.zc_specimen_src_2 on proc_specimen_src.specimen_source_c=zc_specimen_src_2.specimen_src_2_c
+ 
+/* Required LAb Codes*/
+WHERE code IN ('LAB1126','LAB9034','LAB6','LAB755','LAB9','LAB1729',
+'LAB10','LAB9033','LAB9039','LAB4','LAB9031','LAB9043','LAB9042','LAB14','LAB534','LAB13','LAB9011','LAB9044'
+,'LAB9045','LAB9038','LAB9036','LAB1295','LAB343','LAB8052','LAB928','LAB1190','LAB399')
+ 
