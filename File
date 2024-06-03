@@ -1,1 +1,1 @@
-Our team has been tasked with extracting data for the Procedure Catalog (EAP). Below is a list of tables where the data resides. Could we please have these tables added to the SQL Server Clarity Schema? We are not implementing any new development, only querying the tables.
+Given the absence of the 'epg' table, what alternative method can we employ to retrieve the first record from the Epg Master file
