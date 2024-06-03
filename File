@@ -1,1 +1,215 @@
-Given the absence of the 'epg' table, what alternative method can we employ to retrieve the first record from the Epg Master file
+/************************************************* 
+** Author: Swapna Boga
+** Name: Anatomic Pathology SQL (Orahn and Tissue)
+** Description: This SQL Extracts data from EAP for all related procedures .
+** Parameters:  NONE
+** Test Run:  In Snowflake  PROD
+** Revisions: 
+*************************************************/
+
+select eap_map.internal_id  as id ,
+clarity_eap.proc_name as "procedure name",
+zc_del_status.NAME  AS "recordstatus",
+case when clarity_eap_ot.contact_type_c =1 then "inital entry" else "update" end  "contact type",
+clarity_eap.proc_code as "procedure master #",---Eap 100
+clarity_eap.short_name "short procedure name",--- EAP 107
+clarity_eap_4.proc_abbr AS "Procedure Abbreviation",---EAP 108
+edp_map.internal_id AS "category",--eap 200
+edp_proc_cat_info.proc_Cat_name AS "category RECORD NAME",--EAP 200
+clarity_epg.proc_group_id AS "group",---- EAP 205	
+clarity_epg.proc_group_name AS "group RECORD NAME",----EAP 205
+CASE WHEN clarity_eap_3.CLINICALLY_ACTIVE_YN =1 THEN "No" ELSE "Yes" END "clinically active", ----EAP 207
+zc_procedure_type.NAME AS "type",---EAP 210
+eap_synonyms.synonyms  AS "synonyms", ----EAP 420
+clarity_eap_ot.cpt_code "cpt code",---2000
+zc_note_ser.NAME AS  "Alt proc provider type",---EAP 2003
+zc_code_type.NAME "Code type",----EAP 2005
+IIT_MAP.internal_id  AS "MPI ID Type",----EAP 5000
+identity_id_type.id_type_name  AS "MPI: ID TYPE RECORD NAME",
+identity_eap_id.identity_id AS "MPI: ID",
+identity_eap_id.id_eff_from_date AS "MPI: FROM DATE",
+identity_eap_id.id_eff_to_date AS "MPI: TO DATE",
+ '' AS "Hide in Referral Entry", ---NOT extracted TO ANY TABLES IN clarity 50004
+CASE WHEN clarity_eap_ot.orderable_yn = 1 then'Yes' else 'No' end "ORDERABLE",---EAP 6660	
+CASE WHEN clarity_eap_ot.chargeable_yn = 1 then'Yes' else 'No'  "chargeable",--EAP 6661	
+CASE WHEN clarity_eap_ot.historical_yn = 1 then'Yes' else 'No'  "historical",---EAP 6662
+linked_performable.Linked_perform_id AS "LINKED PERFORMABLE",--EAP 6664 NOT DATA available 
+linked_performable.Linked_perform_id AS "LINKED PERFORMA RECORD NAME",--- EAP 6664 NOT DATA available 
+zc_perform_lnk_typ.name AS "PERF LINK TYPE",---EAP 6665 NO DATA IN epic 
+linked_chargeables.Linked_charg_id AS "LINKED CHARGEAB",--EAP 6666 NO DATA IN epic 
+eap_chargeables.proc_name AS "LINKED CHARGEAB RECORD NAME",---EAP 6665 NO DATA IN epic 
+ZC_CHRG_LINK_TYPE.NAME AS "CHARGE LINK TYP"---EAP 6667 NO data
+CASE WHEN clarity_eap.orderable_yn = 1 THEN 'Professional' 
+	 WHEN clarity_eap.orderable_yn = 2 THEN 'Technical'
+				else 'Global' end "CHARGE TYPE",-----zc_charge_type EAP 6668 NO DATA 
+ZC_dflt_spec_type.NAME  AS "Default Specimen Type",---EAP 10020
+lql_map.internal_id "Outpatient Question",---EAP 10300
+cl_qquest.quest_name AS "Outpatient Question RECORD NAME",--EAP 10300
+lql_map_ip.internal_id AS "IP questions",---EAP 10305
+cl_qquest_ip.quest_name  "IP questions RECORD NAME",--EAP 10305
+CASE WHEN clarity_eap_ot.is_ord_spc_qus_yn = 1 then'Yes' else 'No' end "Override procedure category questions?",----EAP 10310
+CASE WHEN clarity_eap_ot.ip_quest_ovrd_yn = 1 then'Yes' else 'No' end  "Inpatient question override",---10315
+zc_show_med_ordr_d.NAME AS "SHOW ORDER DETAIL",---EAP 10350
+lql_rem_map.internal_id AS "OP question removed in OTL",---EAP 10410
+rem_cl_qquest_ip.quest_name  "OP question removed in OTL RECORD NAME",---EAP 10410
+lql_add_map.internal_id AS "OP question added in OTL",	--EAP 10420
+add_cl_qquest.quest_name  AS "OP question added in OTL RECORD NAME",---EAP 10420
+lql_rem_ip_removed.internal_id AS  "IP question removed in OTL"---EAP 10430
+ip_cl_qquest.quest_name  "IP question removed in OTL RECORD NAME"	
+lql_add_ip_map.internal_id AS  "IP question added in OTL"	
+lql_rem_ip_added.quest_name  AS "IP question added in OTL RECORD NAME"
+zc_specimen_src_2.NAME  AS "Specimen Source Default",---EAP 10700
+male_spec_source.NAME  AS "Male Specimen Source Default", ---EAP 10710
+female_spec_source.NAME  AS "Female Specimen Source Default",----EAP 10720
+'' "Specimen Type Pick"--NOT Extracted TO ANY TABLE 
+ip_frequency.freq_id AS "Allowed Freqs",---EAP 10938---CHECK IF this can be manuallly extracted 
+IP_FREQUENCY.FREQ_NAME AS "Allowed Freqs RECORD NAME",
+clarity_eap.ORDER_DISPLAY_NAME AS "Order Display Name",----EAP 10950
+DEFAULT_FREQ.freq_id AS "Default Freqs",----EAP 10955
+DEFAULT_FREQ.FREQ_NAME AS "Default Freqs RECORD NAME",--EAP 10955
+ '' AS "Loc Restrict List IP", ---EAP 13110 NO DATA extracted TO ANY clarity TABLES 	
+ '' AS "Loc Restrict List IP RECORD NAME"---13110 NO DATA extracted TO ANY clarity TABLES
+''AS "Loc List Includes IP" ----13115 NO DATA extracted TO ANY clarity TABLES
+CASE WHEN clarity_eap_2.hide_in_rslt_rev_yn = 1 then'Yes' else 'No' end  "Hide in Results Review and Catch-All Accordions",---EAP 24100
+zc_result_rpt_type.NAME AS "Result Type", ---EAP 24150
+CASE WHEN clarity_eap_2.all_hist_comp_yn = 1 then'Yes' else 'No' end  "Display All Components From Historical Results", ---EAP 24160
+''AS  "Procedure Report" --NO DATA extracted TO ANY clarity TABLES EAP  24170
+ '' AS "Procedure Report RECORD NAME" --NO DATA extracted TO ANY clarity TABLES EAP  24170
+ '' AS "Display Specimen Info" 24190
+ZC_CTX_DISP_ITEMS.NAME AS "Order Composer Contexts",
+eap_ord_comp_confi.PX_ORD_COMP_CFG_ID "Order Composer Configurations",
+---OCC_MAP.internal_id AS "Order Composer Configurations",---NO OCC_MAP TABLE yo GET the .1 record 
+OCC_CONTEXTS.RECORD_NAME AS "Order Composer Configurations RECORD NAME",
+CASE WHEN clarity_eap.show_in_myc_c = 0 THEN 'No' 
+	 WHEN clarity_eap.show_in_myc_c = 1 THEN 'Yes'
+				else 'No if Abnormal' end "SHOW MYC"
+
+from clarity.clarity_eap
+
+left join  clarity.eap_map eap_map on clarity_eap.proc_id = eap_map.cid--- to get the .1 record
+
+left join clarity.zc_del_status on clarity_eap.record_state_eap_c =zc_del_status.del_status_c--record status
+
+left join clarity.clarity_eap_ot  clarity_eap_ot on clarity_eap.proc_id = clarity_eap_ot.proc_id----- contact type30
+
+left join clarity. zc_eap_cont_type  zc_eap_cont_type on clarity_eap_ot.contact_type_c =zc_eap_cont_type.contact_type_c---contact type30
+
+left join clarity.clarity_eap_4 clarity_eap_4 on clarity_eap.proc_id =clarity_eap_4.proc_id---procedure abbreviation
+
+left join clarity.edp_proc_cat_info edp_proc_cat_info on clarity_eap.proc_cat_id =edp_proc_cat_info.proc_cat_id--category record name
+
+left join clarity.edp_map  edp_map  on edp_proc_cat_info.proc_cat_id = edp_map.cid
+
+left join clarity.clarity_epg clarity_epg  on clarity_eap.proc_group_id = clarity_epg.proc_group_id---group record name
+
+---left join clarity.epg_map epg_map on eap.proc_group_id = epg_map.cid
+
+left join clarity.clarity_eap_3 clarity_eap_3 on clarity_eap.proc_id =clarity_eap_3.proc_id
+
+left join clarity.zc_procedure_type zc_procedure_type on clarity_eap.type_c =zc_procedure_type.proc_type
+
+left join clarity.eap_synonyms eap_synonyms on clarity_eap.proc_id =eap_synonyms.proc_id --synonyms
+
+left join clarity.clarity_eap_altcod clarity_eap_altcod  on clarity_eap.proc_id = clarity_eap_altcod.proc_id ---alt proc provider type
+
+left join clarity.zc_note_ser  zc_note_ser  on clarity_eap_altcod.alt_by_prov_typ_c = zc_note_ser.service_type_c  ---alt proc provider type
+
+left join clarity.zc_code_type zc_code_type on clarity_eap_ot.code_type_c =zc_code_type.code_type_c--code_type
+
+left join clarity.identity_eap_id  identity_eap_id on clarity_eap.proc_id =identity_eap_id.identity_type_id---mpi id type
+
+left join clarity.iit_map  iit_map on identity_eap_id.identity_type_id=iit_map.cid
+
+left join clarity.identity_id_type  identity_id_type on identity_eap_id.identity_type_id =identity_id_type.id_type
+
+left join clarity.linked_performable linked_performable   on clarity_eap.proc_id = linked_performable.proc_id----linked performa
+
+left join clarity.zc_dflt_spec_type  zc_dflt_spec_type on clarity_eap.dflt_spec_type_c =zc_dflt_spec_type.dflt_spec_type_c  --default ---specimentype
+
+left join clarity.zc_perform_lnk_typ zc_perform_lnk_typ on linked_performable.perform_link_type_c =zc_perform_lnk_typ.perform_link_type_c
+
+left join clarity.linked_chargeables linked_chargeables  on clarity_eap.proc_id = linked_chargeables.proc_id
+
+left join clarity.clarity_eap eap_chargeables  on eap_chargeables.proc_id = linked_chargeables.linked_chrg_id
+
+left join clarity.zc_chrg_link_type  zc_chrg_link_type on linked_chargeables.chrg_link_type_c =zc_chrg_link_type.chrg_link_type_c
+
+left join clarity.cl_eap_ord_ques_id  cl_eap_ord_ques_id on clarity_eap.proc_id =cl_eap_ord_ques_id.proc_id ---outpatient question
+
+left join  clarity.cl_qquest on cl_eap_ord_ques_id.order_question_id=cl_qquest.quest_id--outpatient question record name
+
+left join clarity.lql_map on cl_qquest.quest_id=lql_map.cid---.1 record
+
+left join  clarity.cl_eap_ip_ord_ques on  clarity_eap.proc_id = cl_eap_ip_ord_ques.proc_id
+
+left join clarity.cl_qquest  cl_qquest_ip on cl_eap_ip_ord_ques.ip_order_quest_id=cl_qquest_ip.quest_id --ip questions
+
+left join clarity.lql_map ip_map  on cl_qquest_ip.quest_id=ip_map.cid--ip questions.1
+
+left join  clarity.zc_show_med_ordr_d on clarity_eap.show_ord_detail_c=zc_show_med_ordr_d.show_med_ordr_d_c---10350
+
+left join  clarity.eap_amb_ques_rem on clarity_eap.proc_id=eap_amb_ques_rem.proc_id--op question removed in otl
+
+left join clarity.cl_qquest rem_cl_qquest_ip on eap_amb_ques_rem.amb_ques_removed_id=rem_cl_qquest_ip.quest_id
+
+left join clarity.lql_map lql_rem_map  on rem_cl_qquest_ip.quest_id=lql_rem_map.cid
+
+left join  clarity.eap_amb_ques_add on clarity_eap.proc_id=eap_amb_ques_add.proc_id---op question added in otl record name
+
+left join clarity.cl_qquest add_cl_qquest on eap_amb_ques_add.amb_ques_added_id=add_cl_qquest.quest_id
+
+left join clarity.lql_map lql_add_map  on add_cl_qquest.quest_id=lql_add_map.cid
+
+left join clarity.eap_ip_ques_rem on clarity_eap.proc_id=eap_ip_ques_rem.proc_id--ip question removed in otl
+
+left join clarity.cl_qquest ip_cl_qquest on eap_ip_ques_rem.ip_ques_removed_id=ip_cl_qquest.quest_id
+
+left join clarity.lql_map lql_rem_ip_removed  on ip_cl_qquest.quest_id=lql_rem_ip_removed.cid
+
+left join  clarity.eap_ip_ques_add on clarity_eap.proc_id=eap_ip_ques_add.proc_id--ip question added in otl
+
+left join clarity.cl_qquest lql_rem_ip_added on eap_ip_ques_add.ip_ques_added_id=lql_rem_ip_added.quest_id
+
+left join clarity.lql_map lql_add_ip_map  on add_cl_qquest.quest_id=lql_add_ip_map.cid
+
+left join clarity.proc_specimen_src on clarity_eap.proc_id=proc_specimen_src.proc_id-----specimen source default
+
+left join clarity.zc_spec_source on proc_specimen_src.specimen_source_c =zc_spec_source.spec_source_c
+
+left join clarity.zc_spec_source male_spec_source on clarity_eap.dflt_spec_src_mal_c=male_spec_source.spec_source_c
+
+left join clarity.zc_spec_source female_spec_source on clarity_eap.dflt_spec_src_fem_c=female_spec_source.spec_source_c
+
+left join clarity.proc_allowed_freq proc_allowed_freq on clarity_eap.proc_id=proc_allowed_freq.proc_id
+
+left join clarity.ip_frequency on proc_allowed_freq.allowed_freq_id =ip_frequency.freq_id ---allowed freq
+
+---left join clarity.efq_map efq_map  on ip_frequency.feq_id=efq_map.cid---no efq map table
+
+left join clarity.clarity_eap_2 on clarity_eap.proc_id=clarity_eap_2.proc_id
+
+left join clarity.ip_frequency default_freq on clarity_eap.dflt_inter_id =default_freq.freq_id
+
+left join clarity.efq_map default_efq_map  on default_freq.freq_id=default_efq_map.cid---default freq record name
+
+left join  clarity.zc_result_rpt_type  on clarity_eap_2.result_rpt_type_c=zc_result_rpt_type.result_rpt_type_c
+
+left join clarity.eap_ord_comp_confi  on clarity_eap.proc_id=eap_ord_comp_confi.proc_id----order composer contexts
+
+left join zc_ctx_disp_items on eap_ord_comp_confi.proc_conf_cntxt_c=zc_ctx_disp_items.ctx_disp_items_c
+
+left join occ_contexts	on	eap_ord_comp_confi.px_ord_comp_cfg_id=occ_contexts.record_id---order composer configurations
+
+left join occ_map on eap_ord_comp_confi.px_ord_comp_cfg_id=occ_map.cid--order composer configurations record name
+
+left join zc_specimen_src_2 on proc_specimen_src.specimen_source_c=zc_specimen_src_2.specimen_src_2_c
+
+/* Required LAb Codes*/
+
+WHERE clarity_eap.PROC_CODE IN ('LAB1126','LAB9034','LAB6','LAB755','LAB9','LAB1729',
+
+'LAB10','LAB9033','LAB9039','LAB4','LAB9031','LAB9043','LAB9042','LAB14','LAB534','LAB13','LAB9011','LAB9044'
+
+,'LAB9045','LAB9038','LAB9036','LAB1295','LAB343','LAB8052','LAB928','LAB1190','LAB399')
+ 
+ 
