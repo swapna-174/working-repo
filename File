@@ -1,22 +1,21 @@
-
 select patABO.PAT_ID,
-SUBSTRING(COALESCE(max(patABO.ABO),STRING_AGG(resCmt.RESULTS_COMP_CMT, ' ') WITHIN GROUP (ORDER BY row_num)),1,8000) ABO from --*dxr 06/20 699102 use multiline results as backup
+SUBSTRING(COALESCE(max(patABO.ABO),STRING_AGG(resCmt.RESULTS_COMP_CMT, ' ') WITHIN GROUP (ORDER BY row_num)),1,8000) ABO from 
 (
- select ordProc.pat_id,ordProc.order_proc_id,res.ORD_VALUE ABO --*sms 12/08 343734 - pat_id now comes from order_proc *dxr 06/20 699102 get order_proc_id to join on later
- ,(ROW_NUMBER() OVER (PARTITION BY ordProc.pat_id ORDER BY res.result_time desc)) AS row_num --*sms 12/08 343734 - pat_id now comes from order_proc
- from order_results res
-             INNER JOIN order_proc ordProc on res.order_proc_id=ordProc.order_proc_id --*sms 12/08 343734 - add join to order_proc
- where res.LAB_STATUS_C > 2                               --final result and above
- and res.component_id in
- (
-   SELECT LRR.COMPONENT_ID     --this gets the list of possible LRR IDs that can be used to result blood type
-   FROM ABO_SETUP ABO,CLARITY_COMPONENT LRR
-   WHERE (ABO.ABO_COMPONENT_TYP_C=1 AND ABO.ABO_COMPONENT_NAME=LRR.COMMON_NAME)
-     OR (ABO.ABO_COMPONENT_TYP_C=2 AND ABO.ABO_COMPONENT_NAME=LRR.BASE_NAME)
-     OR (ABO.ABO_COMPONENT_TYP_C=3 AND ABO.ABO_COMPONENT_NAME=LRR.NAME)
-     OR (ABO.ABO_COMPONENT_TYP_C=4 AND ABO.ABO_COMPONENT_NAME=CAST(LRR.COMPONENT_ID AS Varchar(18)))
- )
+select ordProc.pat_id,ordProc.order_proc_id,res.ORD_VALUE ABO 
+,(ROW_NUMBER() OVER (PARTITION BY ordProc.pat_id ORDER BY res.result_time desc)) AS row_num 
+from order_results res
+             INNER JOIN order_proc ordProc on res.order_proc_id=ordProc.order_proc_id 
+where res.LAB_STATUS_C > 2                       
+and res.component_id in
+(
+   SELECT LRR.COMPONENT_ID     
+   FROM ABO_SETUP ABO,CLARITY_COMPONENT LRR
+   WHERE (ABO.ABO_COMPONENT_TYP_C=1 AND ABO.ABO_COMPONENT_NAME=LRR.COMMON_NAME)
+     OR (ABO.ABO_COMPONENT_TYP_C=2 AND ABO.ABO_COMPONENT_NAME=LRR.BASE_NAME)
+     OR (ABO.ABO_COMPONENT_TYP_C=3 AND ABO.ABO_COMPONENT_NAME=LRR.NAME)
+     OR (ABO.ABO_COMPONENT_TYP_C=4 AND ABO.ABO_COMPONENT_NAME=CAST(LRR.COMPONENT_ID AS Varchar(18)))
+)
 ) patABO 
-LEFT JOIN ORDER_RES_COMP_CMT resCmt on resCmt.ORDER_ID=patABO.ORDER_PROC_ID --*dxr 06/20 699102 - get the multiline results
+LEFT JOIN ORDER_RES_COMP_CMT resCmt on resCmt.ORDER_ID=patABO.ORDER_PROC_ID 
 where patABO.row_num=1
 GROUP BY patABO.pat_ID
