@@ -36,3 +36,11 @@ WHERE
     patABO.row_num = 1
 GROUP BY 
     patABO.pat_ID;
+
+
+ABO/RH (D)
+ABORH
+ABO GROUP
+ABO GROUPING
+DONOR ABO GROUP
+ABOC
