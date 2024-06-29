@@ -1,1 +1,1 @@
-In Clarity, which table has the Employee ID populated? I checked the Provider tables, but the Employee ID is blank. However, I found the Employee information in the Employee table for the same name. Why is the Employee ID blank in the Provider table when it exists in the EmployeeDim table
+In Clarity and Caboodle, how do we join the Employee and Provider tables to get provider-related information? We checked the Provider SER tables, but the Employee ID is blank.
