@@ -1,1 +1,2 @@
-Here is the extract for the procedure data. As discussed earlier, some data points have not been extracted from the database, and some data points are not configured to extract the ID records in EPIC. If needed, we can manually check and enter the values, but I have left it blank for now.
+
+The below screen is folder structure or Group that is orginzed for the lab results (front end only view ) . This is no where extracted to any of the clarity or caboodle tables . It is stored in the LCG master file  but not extracted to any table.
