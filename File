@@ -1,1 +1,1 @@
-Like we do not have DEV,TST and PROD really to work with ? And our team only extracts data but doent injest data 
+we don't have distinct DEV, TST, and PROD environments to work with. Additionally, we focus solely on data extraction rather than data ingestion.
