@@ -1,3 +1,1 @@
-Hi Jeanette,
-
-Our team is structured a bit differently from the others, so documenting the process might not be as effective. Instead, I recommend putting the practices into action directly. However, I will prepare a brief document outlining best practices for Snowflake SQL code reviews.
+Like we do not have DEV,TST and PROD really to work with ? And our team only extracts data but doent injest data 
