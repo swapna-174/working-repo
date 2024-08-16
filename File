@@ -1,1 +1,5 @@
-When optimizing SQL queries, start with row-level operations, then move on to group-level operations, analytic functions, and finally, result generation. Focusing on the initial stages of the query process will have the most significant impact.
+Optimize Query Logic:
+
+Use CTEs (Common Table Expressions) or temporary tables for complex subqueries to simplify and potentially reuse results.
+Avoid unnecessary joins and instead use semi-joins or exists where possible.
+Use window functions judiciously; they are powerful but can be costly in terms of performance.
