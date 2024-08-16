@@ -1,1 +1,1 @@
-https://medium.com/@vuppala.venkat/snowflake-sql-best-practices-6fd7573bd39d
+When optimizing SQL queries, start with row-level operations, then move on to group-level operations, analytic functions, and finally, result generation. Focusing on the initial stages of the query process will have the most significant impact.
