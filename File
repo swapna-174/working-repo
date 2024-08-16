@@ -1,5 +1,3 @@
-Optimize Query Logic:
-
-Use CTEs (Common Table Expressions) or temporary tables for complex subqueries to simplify and potentially reuse results.
-Avoid unnecessary joins and instead use semi-joins or exists where possible.
-Use window functions judiciously; they are powerful but can be costly in terms of performance.
+Optimize Joins and Subqueries
+Use JOINs effectively by ensuring they are on indexed or clustered columns where possible.
+Replace complex subqueries with Common Table Expressions (CTEs) or temporary tables to simplify the query structure and improve readability.
