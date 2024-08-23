@@ -1,1 +1,1 @@
-I have included patient demographics along with the Patient Epic MRN and Cerner MRN. Vitals are recorded for only a few patients in Epic, while the rest show no visit or encounter data. Additionally, some patients on the list are deceased. Please review and let me know if you have any further questions
+Here is the document that covers best practices with Snowflake SQL. I have included all the points from my SQL experience. Please feel free to add any additional valuable insights to the document
