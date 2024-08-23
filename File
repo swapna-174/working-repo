@@ -1,6 +1,1 @@
-Hi Jim,
-
-
-Please can someone from the team execute the attached SQL and provide me with the results. I tasked to work on mapping the Cerner MRN to Epic MRN -Although I have access to Epic  Hyerspace ,clarity,caboodle -I don’t have to some of the stage lookup tables which needed for mapping .
-
-This is one time request and I don’t it would make sense to go the snowflake team in requesting access 
+I have included patient demographics along with the Patient Epic MRN and Cerner MRN. Vitals are recorded for only a few patients in Epic, while the rest show no visit or encounter data. Additionally, some patients on the list are deceased. Please review and let me know if you have any further questions
