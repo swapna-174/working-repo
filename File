@@ -1,3 +1,5 @@
+https://roboquery.com/app/convert-Microsoft_SQL_Server-to-snowflake
+
 WITH EPIC_PATIENT_VISITS AS 
 	(
 SELECT 	DISTINCT
