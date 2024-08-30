@@ -35,7 +35,7 @@ SELECT
     CONVERT(INT, admitting_source_concept_id)		AS admitting_source_concept_id, -- admitted_from_concept_id,
     CONVERT(INT, discharge_to_concept_id)			AS discharge_to_concept_id,
 	CASE 
-	WHEN ra = 1	THEN NULL
+	WHEN rownumber = 1	THEN NULL
 	ELSE visit_detail_id - 1
 	END												AS preceding_visit_detail_id, -- A foreign key to the VISIT_DETAIL table of the visit immediately preceding this visit
     CONVERT(VARCHAR(50), visit_source_value)		AS visit_source_value, -- visit_detail_source_value,
@@ -44,7 +44,7 @@ SELECT
     CONVERT(VARCHAR(50), discharge_to_source_value) AS discharge_to_source_value,		
 	CASE 
 	WHEN ra = 1	THEN visit_detail_id
-	ELSE visit_detail_id - ra + 1
+	ELSE visit_detail_id - rownumber + 1
 	END												AS visit_detail_parent_id,
 	visit_occurrence_id								AS visit_occurrence_id,
 	SERV_AREA_NAME AS FACILITY_ID,
@@ -54,7 +54,7 @@ SELECT
 FROM
 (
     SELECT DISTINCT
-	RANK() OVER (PARTITION BY E.PAT_ENC_CSN_ID ORDER BY A.SEQ_NUM_IN_ENC, A.EFFECTIVE_TIME) AS ra,
+	RANK() OVER (PARTITION BY E.PAT_ENC_CSN_ID ORDER BY A.SEQ_NUM_IN_ENC, A.EFFECTIVE_TIME) AS rownumber,
 	ROW_NUMBER() OVER (ORDER BY E.PAT_ENC_CSN_ID, A.SEQ_NUM_IN_ENC, A.EFFECTIVE_TIME)       AS visit_detail_id,
 	E.PAT_ENC_CSN_ID																		AS visit_occurrence_id,
 	CAST(P.person_id AS BIGINT)																AS person_id,
