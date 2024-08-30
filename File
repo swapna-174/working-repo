@@ -21,108 +21,107 @@ WITH EPIC_PATIENT_VISITS AS
 	), 
 
 
-
 SELECT
 	visit_detail_id									AS visit_detail_id,
-  CAST(person_id AS bigint)					AS person_id,
-  CAST( visit_detail_concept_id AS integer)			AS visit_detail_concept_id,
-    CAST(visit_start_date AS date)					AS visit_start_date, 
-    CAST(visit_start_datetime AS timestamp)		AS visit_start_datetime, 
-   CAST( visit_end_date AS date)					AS visit_end_date, 
-   CAST( visit_end_datetime AS timestamp)			AS visit_end_datetime, --visit_detail_end_datetime,
-    CAST(visit_type_concept_id AS integer)				AS visit_type_concept_id, -- visit_detail_type_concept_id,
-    CAST( provider_id AS integer)						AS provider_id,
-    CAST( care_site_id AS integer)						AS care_site_id,
-    CAST(ZC_ADM_SOURCEmitting_source_concept_id AS integer)		AS ZC_ADM_SOURCEmitting_source_concept_id, -- ZC_ADM_SOURCEmitted_from_concept_id,
-    CAST( discharge_to_concept_id AS integer)			AS discharge_to_concept_id,
+    CONVERT(BIGINT, person_id)						AS person_id,
+    CONVERT(INT, visit_detail_concept_id)			AS visit_detail_concept_id,
+    CONVERT(DATE, visit_start_date)					AS visit_start_date, --visit_detail_start_date,
+    CONVERT(DATETIME2, visit_start_datetime)		AS visit_start_datetime, --visit_detail_start_datetime,
+    CONVERT(DATE, visit_end_date)					AS visit_end_date, --visit_detail_end_date,
+    CONVERT(DATETIME2, visit_end_datetime)			AS visit_end_datetime, --visit_detail_end_datetime,
+    CONVERT(INT, visit_type_concept_id)				AS visit_type_concept_id, -- visit_detail_type_concept_id,
+    CONVERT(INT, provider_id)						AS provider_id,
+    CONVERT(INT, care_site_id)						AS care_site_id,
+    CONVERT(INT, admitting_source_concept_id)		AS admitting_source_concept_id, -- admitted_from_concept_id,
+    CONVERT(INT, discharge_to_concept_id)			AS discharge_to_concept_id,
 	CASE 
-	WHEN rowvalue = 1	THEN NULL
+	WHEN ra = 1	THEN NULL
 	ELSE visit_detail_id - 1
 	END												AS preceding_visit_detail_id, -- A foreign key to the VISIT_DETAIL table of the visit immediately preceding this visit
-  CAST( visit_source_value AS varchar(50))		AS visit_source_value, -- visit_detail_source_value,
-    CAST( visit_source_concept_id AS integer)			AS visit_source_concept_id, -- visit_detail_source_concept_id,
-    CAST( ZC_ADM_SOURCEmitting_source_value AS varchar(50))	AS ZC_ADM_SOURCEmitting_source_value, -- ZC_ADM_SOURCEmitted_from_source_value,	
-  CAST(discharge_to_source_value AS varchar) AS discharge_to_source_value,		
+    CONVERT(VARCHAR(50), visit_source_value)		AS visit_source_value, -- visit_detail_source_value,
+    CONVERT(INT, visit_source_concept_id)			AS visit_source_concept_id, -- visit_detail_source_concept_id,
+    CONVERT(VARCHAR(50), admitting_source_value)	AS admitting_source_value, -- admitted_from_source_value,	
+    CONVERT(VARCHAR(50), discharge_to_source_value) AS discharge_to_source_value,		
 	CASE 
-	WHEN rowvalue = 1	THEN visit_detail_id
-	ELSE visit_detail_id - rowvalue + 1
+	WHEN ra = 1	THEN visit_detail_id
+	ELSE visit_detail_id - ra + 1
 	END												AS visit_detail_parent_id,
 	visit_occurrence_id								AS visit_occurrence_id,
 	SERV_AREA_NAME AS FACILITY_ID,
 	'Clarity'	AS source_system,
-	'CLARITY_ZC_ADM_SOURCET'	AS source_table,
-	CLARITY_ADT.source_recordid AS source_recordid
+	'CLARITY_ADT'	AS source_table,
+	a.source_recordid AS source_recordid
 FROM
 (
     SELECT DISTINCT
-	RANK() OVER (PARTITION BY E.PAT_ENC_CSN_ID ORDER BY CLARITY_ADT.SEQ_NUM_IN_ENC, CLARITY_ADT.EFFECTIVE_TIME) AS rowvalue,
-	ROW_NUMBER() OVER (ORDER BY E.PAT_ENC_CSN_ID, CLARITY_ADT.SEQ_NUM_IN_ENC, CLARITY_ADT.EFFECTIVE_TIME)       AS visit_detail_id,
+	RANK() OVER (PARTITION BY E.PAT_ENC_CSN_ID ORDER BY A.SEQ_NUM_IN_ENC, A.EFFECTIVE_TIME) AS ra,
+	ROW_NUMBER() OVER (ORDER BY E.PAT_ENC_CSN_ID, A.SEQ_NUM_IN_ENC, A.EFFECTIVE_TIME)       AS visit_detail_id,
 	E.PAT_ENC_CSN_ID																		AS visit_occurrence_id,
 	CAST(P.person_id AS BIGINT)																AS person_id,
 	CASE 
-		WHEN CLARITY_ADT.PAT_LVL_OF_CARE_C = 3 THEN 32037			-- ICU
-		WHEN CLARITY_DEP.DEPARTMENT_NAME LIKE '%ICU%' THEN 32037	-- ICU
-		WHEN ENC_TYPE_C = 3 AND PAT_ENC_HSP.HOSP_ZC_ADM_SOURCEMSN_TYPE_C = 3 AND ED_DISPOSITION_C = 3 AND PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C = 101 AND PAT_ENC_HSP.HOSP_ZC_ADM_SOURCEMSN_TIME IS NOT NULL AND NOT (S.NAME LIKE 'ED%' OR S.NAME LIKE '%EMER%' OR S.NAME = 'QUICK ER') THEN 9201 -- E-I
-		WHEN ENC_TYPE_C = 3 AND PAT_ENC_HSP.HOSP_ZC_ADM_SOURCEMSN_TYPE_C = 3 AND ED_DISPOSITION_C = 3 AND PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C = 101 AND (S.NAME LIKE 'ED%' OR S.NAME LIKE '%EMER%' OR S.NAME = 'QUICK ER') THEN 9203 -- E-I: Split E-I Into E and I
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=103 OR 
-			(CLARITY_DEP.DEPARTMENT_NAME LIKE 'ED%' OR CLARITY_DEP.DEPARTMENT_NAME LIKE '%EMER%' OR CLARITY_DEP.DEPARTMENT_NAME = 'QUICK ER') THEN 9203 -- Emergency
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=109  OR 
+		WHEN A.PAT_LVL_OF_CARE_C = 3 THEN 32037			-- ICU
+		WHEN DP.DEPARTMENT_NAME LIKE '%ICU%' THEN 32037	-- ICU
+		WHEN ENC_TYPE_C = 3 AND H.HOSP_ADMSN_TYPE_C = 3 AND ED_DISPOSITION_C = 3 AND H.ADT_PAT_CLASS_C = 101 AND H.HOSP_ADMSN_TIME IS NOT NULL AND NOT (S.NAME LIKE 'ED%' OR S.NAME LIKE '%EMER%' OR S.NAME = 'QUICK ER') THEN 9201 -- E-I
+		WHEN ENC_TYPE_C = 3 AND H.HOSP_ADMSN_TYPE_C = 3 AND ED_DISPOSITION_C = 3 AND H.ADT_PAT_CLASS_C = 101 AND (S.NAME LIKE 'ED%' OR S.NAME LIKE '%EMER%' OR S.NAME = 'QUICK ER') THEN 9203 -- E-I: Split E-I Into E and I
+		WHEN H.ADT_PAT_CLASS_C=103 OR 
+			(DP.DEPARTMENT_NAME LIKE 'ED%' OR DP.DEPARTMENT_NAME LIKE '%EMER%' OR DP.DEPARTMENT_NAME = 'QUICK ER') THEN 9203 -- Emergency
+		WHEN H.ADT_PAT_CLASS_C=109  OR 
 			SPECIALTY = 'Lab'       THEN 32036          -- Specimen
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=114  THEN 38004269       -- RZC_ADM_SOURCEiation Oncology
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=101 OR (CLARITY_DEP.DEPARTMENT_NAME LIKE '%inpat%' OR
-			(CLARITY_DEP.DEPARTMENT_NAME NOT LIKE '%HIP%' AND CLARITY_DEP.DEPARTMENT_NAME LIKE '%IP%')) -- Exclude HIP - Outpatient
+		WHEN H.ADT_PAT_CLASS_C=114  THEN 38004269       -- Radiation Oncology
+		WHEN H.ADT_PAT_CLASS_C=101 OR (DP.DEPARTMENT_NAME LIKE '%inpat%' OR
+			(DP.DEPARTMENT_NAME NOT LIKE '%HIP%' AND DP.DEPARTMENT_NAME LIKE '%IP%')) -- Exclude HIP - Outpatient
 									THEN 9201           -- Inpatient
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=102 AND CLARITY_DEP.DEPARTMENT_NAME LIKE '%ONC%'
+		WHEN H.ADT_PAT_CLASS_C=102 AND DP.DEPARTMENT_NAME LIKE '%ONC%'
 									THEN 38004268       -- Oncology
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=102 AND CLARITY_DEP.DEPARTMENT_NAME LIKE '%INFUSION%'
+		WHEN H.ADT_PAT_CLASS_C=102 AND DP.DEPARTMENT_NAME LIKE '%INFUSION%'
 									THEN 38004228       -- Infusion Therapy                         
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=106  THEN 8883 			-- Hospital Outpatient Surgery mapped to Ambulatory Surgical Center
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=108  THEN 8883           -- Surgery ZC_ADM_SOURCEmit mapped to Ambulatory Surgical Center
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=107  THEN 9201           -- Newborn
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=129  THEN 9203           -- ED Psych
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=125  THEN 9201           -- Inpatient Psych
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=128  THEN 9201           -- Inpatient Rehab
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=123  THEN 9201           -- Hospice - Inpatient
-		WHEN PAT_ENC.ENC_TYPE_C IN (100311, 100312, 101, 1214)
+		WHEN H.ADT_PAT_CLASS_C=106  THEN 8883 			-- Hospital Outpatient Surgery mapped to Ambulatory Surgical Center
+		WHEN H.ADT_PAT_CLASS_C=108  THEN 8883           -- Surgery Admit mapped to Ambulatory Surgical Center
+		WHEN H.ADT_PAT_CLASS_C=107  THEN 9201           -- Newborn
+		WHEN H.ADT_PAT_CLASS_C=129  THEN 9203           -- ED Psych
+		WHEN H.ADT_PAT_CLASS_C=125  THEN 9201           -- Inpatient Psych
+		WHEN H.ADT_PAT_CLASS_C=128  THEN 9201           -- Inpatient Rehab
+		WHEN H.ADT_PAT_CLASS_C=123  THEN 9201           -- Hospice - Inpatient
+		WHEN E.ENC_TYPE_C IN (100311, 100312, 101, 1214)
 									THEN 581477         -- Office visit
-		WHEN PAT_ENC.ENC_TYPE_C = 100315  THEN 5083           -- TELEPHONE SERVICE -> Telehealth
-		WHEN PAT_ENC.ENC_TYPE_C = 121     THEN 9202           -- PROCEDURE -> Outpatient Visit
-		WHEN PAT_ENC.ENC_TYPE_C = 200     THEN 9202           -- NURSE VISIT -> Outpatient Visit
-		WHEN PAT_ENC.ENC_TYPE_C = 210     THEN 9202           -- Treatment  -> Outpatient Visit
-		WHEN PAT_ENC.ENC_TYPE_C = 2501    THEN 32693          -- Evaluation
-		WHEN PAT_ENC.ENC_TYPE_C = 309     THEN 38004193       -- Social Work -> Case Management Visit
-		WHEN PAT_ENC.ENC_TYPE_C = 315     THEN 9201           -- Nutrition
-		WHEN PAT_ENC.ENC_TYPE_C = 320     THEN 9202           -- Anticoag Visit -> Outpatient Visit
-		WHEN PAT_ENC.ENC_TYPE_C = 323     THEN 581476         -- Home Visit
-		WHEN CLARITY_DEP.DEPARTMENT_NAME LIKE '%URGI CARE%' 											THEN 8782 -- Urgent Care Facility
-		WHEN CLARITY_DEP.DEPARTMENT_NAME LIKE '%MAMMO%' OR CLARITY_DEP.DEPARTMENT_NAME LIKE '%BREAST IMAG%' 	THEN 38004251 -- Mammography
-		WHEN CLARITY_DEP.DEPARTMENT_NAME LIKE '%MR IMAG%' OR CLARITY_DEP.DEPARTMENT_NAME LIKE '%MRI%' 		THEN 38004238 --Magnetic Resonance Imaging (MRI)
-		WHEN CLARITY_DEP.DEPARTMENT_NAME LIKE '%ENDOSCOPY%' 											THEN 38004222 -- Endoscopy
-		WHEN CLARITY_DEP.DEPARTMENT_NAME LIKE '%IMAGING%' OR CLARITY_DEP.DEPARTMENT_NAME LIKE '%RZC_ADM_SOURCEIO%' OR CLARITY_DEP.DEPARTMENT_NAME LIKE '%ULTRASOUND%' -- IMAGING
-			OR SPECIALTY = 'RZC_ADM_SOURCEiology'  													THEN 38004250   
-		WHEN PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C=102  														THEN 9202           -- Outpatient                   
+		WHEN E.ENC_TYPE_C = 100315  THEN 5083           -- TELEPHONE SERVICE -> Telehealth
+		WHEN E.ENC_TYPE_C = 121     THEN 9202           -- PROCEDURE -> Outpatient Visit
+		WHEN E.ENC_TYPE_C = 200     THEN 9202           -- NURSE VISIT -> Outpatient Visit
+		WHEN E.ENC_TYPE_C = 210     THEN 9202           -- Treatment  -> Outpatient Visit
+		WHEN E.ENC_TYPE_C = 2501    THEN 32693          -- Evaluation
+		WHEN E.ENC_TYPE_C = 309     THEN 38004193       -- Social Work -> Case Management Visit
+		WHEN E.ENC_TYPE_C = 315     THEN 9201           -- Nutrition
+		WHEN E.ENC_TYPE_C = 320     THEN 9202           -- Anticoag Visit -> Outpatient Visit
+		WHEN E.ENC_TYPE_C = 323     THEN 581476         -- Home Visit
+		WHEN DP.DEPARTMENT_NAME LIKE '%URGI CARE%' 											THEN 8782 -- Urgent Care Facility
+		WHEN DP.DEPARTMENT_NAME LIKE '%MAMMO%' OR DP.DEPARTMENT_NAME LIKE '%BREAST IMAG%' 	THEN 38004251 -- Mammography
+		WHEN DP.DEPARTMENT_NAME LIKE '%MR IMAG%' OR DP.DEPARTMENT_NAME LIKE '%MRI%' 		THEN 38004238 --Magnetic Resonance Imaging (MRI)
+		WHEN DP.DEPARTMENT_NAME LIKE '%ENDOSCOPY%' 											THEN 38004222 -- Endoscopy
+		WHEN DP.DEPARTMENT_NAME LIKE '%IMAGING%' OR DP.DEPARTMENT_NAME LIKE '%RADIO%' OR DP.DEPARTMENT_NAME LIKE '%ULTRASOUND%' -- IMAGING
+			OR SPECIALTY = 'Radiology'  													THEN 38004250   
+		WHEN H.ADT_PAT_CLASS_C=102  														THEN 9202           -- Outpatient                   
 		WHEN E.ENC_TYPE_C = 50      														THEN 9202
 		ELSE 0 
 		END																						AS visit_detail_concept_id
-	, CONVERT(DATE, COALESCE(CLARITY_ADT.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE))	AS visit_start_date
-	, COALESCE(CLARITY_ADT.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)					AS visit_start_datetime
+	, CONVERT(DATE, COALESCE(A.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE))	AS visit_start_date
+	, COALESCE(A.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)					AS visit_start_datetime
 	, CASE 
 	    WHEN COALESCE(B.EFFECTIVE_TIME, E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME) IS NOT NULL 
 			AND COALESCE(B.EFFECTIVE_TIME, E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME) 
-			>= COALESCE(CLARITY_ADT.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
+			>= COALESCE(A.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
 		THEN CONVERT(DATE, COALESCE(B.EFFECTIVE_TIME, E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME))
 		WHEN COALESCE(E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME) 
-			>= COALESCE(CLARITY_ADT.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
+			>= COALESCE(A.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
 		THEN CONVERT(DATE, COALESCE(E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME)) 
 		ELSE NULL
 		END																						AS visit_end_date
 	, CASE 
 	    WHEN COALESCE(B.EFFECTIVE_TIME, E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME) IS NOT NULL 
 			AND COALESCE(B.EFFECTIVE_TIME, E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME) 
-			>= COALESCE(CLARITY_ADT.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
+			>= COALESCE(A.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
 		THEN CONVERT(DATETIME, COALESCE(B.EFFECTIVE_TIME, E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME))
 		WHEN COALESCE(E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME) 
-			>= COALESCE(CLARITY_ADT.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
+			>= COALESCE(A.EFFECTIVE_TIME, E.CHECKIN_TIME, E.APPT_TIME, E.CONTACT_DATE)
 		THEN CONVERT(DATETIME, COALESCE(E.HOSP_DISCHRG_TIME, E.CHECKOUT_TIME)) 
 		ELSE NULL
 		END																						AS visit_end_datetime  
@@ -130,72 +129,72 @@ FROM
     , COALESCE(PRV.provider_id, PRV1.provider_id)												AS provider_id
     , E.EFFECTIVE_DEPT_ID																		AS care_site_id
     , CASE
-		WHEN PRC_NAME IS NOT NULL THEN CONVERT(VARCHAR(50), CLARITY_DEP.DEPARTMENT_NAME + '_' + PRC_NAME)
-		WHEN CLARITY_ADT.ROOM_ID IS NOT NULL AND S.NAME IS NOT NULL THEN 
-			CLARITY_DEP.DEPARTMENT_NAME + '_' + CLARITY_ADT.ROOM_ID + '_' + CLARITY_ADT.BED_ID + '_' + S.NAME
-		ELSE CONVERT(VARCHAR(50), CLARITY_DEP.DEPARTMENT_NAME) END										AS visit_source_value
+		WHEN PRC_NAME IS NOT NULL THEN CONVERT(VARCHAR(50), DP.DEPARTMENT_NAME + '_' + PRC_NAME)
+		WHEN A.ROOM_ID IS NOT NULL AND S.NAME IS NOT NULL THEN 
+			DP.DEPARTMENT_NAME + '_' + A.ROOM_ID + '_' + A.BED_ID + '_' + S.NAME
+		ELSE CONVERT(VARCHAR(50), DP.DEPARTMENT_NAME) END										AS visit_source_value
     , 0																							AS visit_source_concept_id
 	, CASE
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 1			THEN 8827		--Custodial Care Facility
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 2			THEN 38004207	--Ambulatory Clinic / Center
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 29			THEN 8536		--Home
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 7			THEN 8870		--Emergency Room - Hospital 
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C IN (27, 28)	THEN 38004515	--Hospital
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 25			THEN 32592		--Born inside this hospital
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C IN (4, 22)		THEN 8717		--Inpatient Hospital
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 9			THEN 21498751	--Information not available
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 5			THEN 8863		--Skilled Nursing Facility
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 6			THEN 38004226	--Ambulatory Health Service Clinic / Center
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 23			THEN 8883		--Ambulatory Surgical Center
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 8			THEN 32198		--Court / Law enforcement
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 26			THEN 32593		--Born outside this hospital
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 10			THEN 38004274	--Substance Use Disorder Rehabilitation Hospital Unit
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 24			THEN 8546		--Hospice
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 30			THEN 4138517	--Self-referral
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 107			THEN 33007		--Alternate care site (ACS)
-          WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 3			THEN 32582		--HMO Referral
-		  WHEN ZC_ADM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = 106 			THEN 38004277	--Long Term Care Hospital				
-	END 																						AS ZC_ADM_SOURCEmitting_source_concept_id
-    , ZC_ADM_SOURCE.NAME																					AS ZC_ADM_SOURCEmitting_source_value 
+          WHEN AD.ADMIT_SOURCE_C = 1			THEN 8827		--Custodial Care Facility
+          WHEN AD.ADMIT_SOURCE_C = 2			THEN 38004207	--Ambulatory Clinic / Center
+          WHEN AD.ADMIT_SOURCE_C = 29			THEN 8536		--Home
+          WHEN AD.ADMIT_SOURCE_C = 7			THEN 8870		--Emergency Room - Hospital 
+          WHEN AD.ADMIT_SOURCE_C IN (27, 28)	THEN 38004515	--Hospital
+          WHEN AD.ADMIT_SOURCE_C = 25			THEN 32592		--Born inside this hospital
+          WHEN AD.ADMIT_SOURCE_C IN (4, 22)		THEN 8717		--Inpatient Hospital
+          WHEN AD.ADMIT_SOURCE_C = 9			THEN 21498751	--Information not available
+          WHEN AD.ADMIT_SOURCE_C = 5			THEN 8863		--Skilled Nursing Facility
+          WHEN AD.ADMIT_SOURCE_C = 6			THEN 38004226	--Ambulatory Health Service Clinic / Center
+          WHEN AD.ADMIT_SOURCE_C = 23			THEN 8883		--Ambulatory Surgical Center
+          WHEN AD.ADMIT_SOURCE_C = 8			THEN 32198		--Court / Law enforcement
+          WHEN AD.ADMIT_SOURCE_C = 26			THEN 32593		--Born outside this hospital
+          WHEN AD.ADMIT_SOURCE_C = 10			THEN 38004274	--Substance Use Disorder Rehabilitation Hospital Unit
+          WHEN AD.ADMIT_SOURCE_C = 24			THEN 8546		--Hospice
+          WHEN AD.ADMIT_SOURCE_C = 30			THEN 4138517	--Self-referral
+          WHEN AD.ADMIT_SOURCE_C = 107			THEN 33007		--Alternate care site (ACS)
+          WHEN AD.ADMIT_SOURCE_C = 3			THEN 32582		--HMO Referral
+		  WHEN AD.ADMIT_SOURCE_C = 106 			THEN 38004277	--Long Term Care Hospital				
+	END 																						AS admitting_source_concept_id
+    , AD.NAME																					AS admitting_source_value 
     , CASE
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (20, 40, 41, 42 ) OR PAT_ENC_HSP.DISCH_DISP_C = 'EXP'			THEN 4216643	-- Patient died
-        WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (1, 81)  OR PAT_ENC_HSP.DISCH_DISP_C = 'HOM'					THEN 8536		-- Home
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (6, 86)  OR PAT_ENC_HSP.DISCH_DISP_C IN ('HH', 'HHS') 			THEN 38004519 	-- Home Health
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (50, 51)				 								THEN 8546		-- Hospice
-        WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (3)  OR PAT_ENC_HSP.DISCH_DISP_C = 'SNF'						THEN 8863		-- Skilled Nursing Facility
-        WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (62, 90)  											THEN 8920		-- Rehabilitation Facility
-        WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (65, 93) OR PAT_ENC_HSP.DISCH_DISP_C = 'PSY'					THEN 8971		-- Inpatient Psychiatric Facility 
-        WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (2, 201, 202, 203, 43, 5, 66, 82, 85, 88, 9, 94)		THEN 8717		-- Inpatient Hospital
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (4, 205, 84)											THEN 8827		-- Custodial Care Facility
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (21, 87) OR PAT_ENC_HSP.DISCH_DISP_C = 'PRS'					THEN 38003619	-- Prison/Correctional Facility
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (7) OR PAT_ENC_HSP.DISCH_DISP_C = 'AMA'						THEN 4021968 	-- Patient Self-Discharge Leave Against Medical ZC_ADM_SOURCEvice
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (100, 200) 											THEN 4146681 	-- ED DISMISS - NEVER ARRIVED
-        WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (63, 91)												THEN 8970		-- Inpatient Long-term care
-		WHEN ZC_DISCH_DISP.DISCH_DISP_C IN (206, 64, 83, 92)									THEN 8676		-- Nursing Facility
+		WHEN D.DISCH_DISP_C IN (20, 40, 41, 42 ) OR H.DISCH_DISP_C = 'EXP'			THEN 4216643	-- Patient died
+        WHEN D.DISCH_DISP_C IN (1, 81)  OR H.DISCH_DISP_C = 'HOM'					THEN 8536		-- Home
+		WHEN D.DISCH_DISP_C IN (6, 86)  OR H.DISCH_DISP_C IN ('HH', 'HHS') 			THEN 38004519 	-- Home Health
+		WHEN D.DISCH_DISP_C IN (50, 51)				 								THEN 8546		-- Hospice
+        WHEN D.DISCH_DISP_C IN (3)  OR H.DISCH_DISP_C = 'SNF'						THEN 8863		-- Skilled Nursing Facility
+        WHEN D.DISCH_DISP_C IN (62, 90)  											THEN 8920		-- Rehabilitation Facility
+        WHEN D.DISCH_DISP_C IN (65, 93) OR H.DISCH_DISP_C = 'PSY'					THEN 8971		-- Inpatient Psychiatric Facility 
+        WHEN D.DISCH_DISP_C IN (2, 201, 202, 203, 43, 5, 66, 82, 85, 88, 9, 94)		THEN 8717		-- Inpatient Hospital
+		WHEN D.DISCH_DISP_C IN (4, 205, 84)											THEN 8827		-- Custodial Care Facility
+		WHEN D.DISCH_DISP_C IN (21, 87) OR H.DISCH_DISP_C = 'PRS'					THEN 38003619	-- Prison/Correctional Facility
+		WHEN D.DISCH_DISP_C IN (7) OR H.DISCH_DISP_C = 'AMA'						THEN 4021968 	-- Patient Self-Discharge Leave Against Medical Advice
+		WHEN D.DISCH_DISP_C IN (100, 200) 											THEN 4146681 	-- ED DISMISS - NEVER ARRIVED
+        WHEN D.DISCH_DISP_C IN (63, 91)												THEN 8970		-- Inpatient Long-term care
+		WHEN D.DISCH_DISP_C IN (206, 64, 83, 92)									THEN 8676		-- Nursing Facility
 		ELSE 44814650 -- No Information
 	END                    																		AS discharge_to_concept_id
     , CONVERT(VARCHAR(20), D.NAME)																AS discharge_to_source_value
-	, COALESCE(PAT_ENC.SERV_AREA_ID, CLARITY_DEP.SERV_AREA_ID) AS SERV_AREA_ID															 	--ZC_ADM_SOURCEDED ON 11/17/2021 TO TAKE CARE OF DEPRECATED SERV_AREA_ID COLUMN IN PAT_ENC TABLE	
-	, CLARITY_SCLARITY_ADT.SERV_AREA_NAME
-	, 'EVENT_ID:' + TRIM(CLARITY_ZC_ADM_SOURCET.EVENT_ID)) 													AS source_recordid	
-	FROM  Clarity.PAT_ENC 
-	INNER JOIN EPIC_PATIENT_VISITS  ON EPIC_PATIENT_VISITS.person_source_value = PAT_ENC.PAT_ID
-	LEFT JOIN Clarity.PAT_ENC_HSP   ON PAT_ENC.PAT_ENC_CSN_ID = PAT_ENC_HSP.PAT_ENC_CSN_ID
-	LEFT JOIN clarity.CLARITY_SER  AS PRV ON PAT_ENC_HSP.BILL_ATTEND_PROV_ID = CLARITY_SER.PROV_ID
-	LEFT JOIN clarity.CLARITY_SER VISITPRV  ON PAT_ENC.VISIT_PROV_ID = VISITPRV.PROV_ID	
-	LEFT JOIN Clarity.CLARITY_ZC_ADM_SOURCET  ON PAT_ENC.PAT_ENC_CSN_ID =CLARITY_ZC_ADM_SOURCET.PAT_ENC_CSN_ID 
-	AND CLARITY_ZC_ADM_SOURCET.EVENT_TYPE_C NOT IN (4, 5, 6) AND CLARITY_ZC_ADM_SOURCET.SEQ_NUM_IN_ENC IS NOT NULL
-	JOIN Clarity.CLARITY_ZC_ADM_SOURCET CLARITY_ZC_ADM_SOURCET2 (NOLOCK) ON CLARITY_ZC_ADM_SOURCET.PAT_ID = CLARITY_ZC_ADM_SOURCET2.PAT_ID 
-	AND CLARITY_ZC_ADM_SOURCET.PAT_ENC_CSN_ID = CLARITY_ZC_ADM_SOURCET2.PAT_ENC_CSN_ID AND CLARITY_ZC_ADM_SOURCET2.EVENT_TYPE_C IN (2, 4)
-		AND CLARITY_ZC_ADM_SOURCET2.EVENT_ID IN (CLARITY_ADT.NEXT_OUT_EVENT_ID)
-	LEFT JOIN Clarity.ZC_DISCH_DISP D (NOLOCK) ON (ZC_DISCH_DISP.DISCH_DISP_C = PAT_ENC_HSP.DISCH_DISP_C AND PAT_ENC_HSP.DISCH_DISP_C = 1
-	LEFT JOIN Clarity.ZC_ZC_ADM_SOURCEM_SOURCE  ON ZC_ZC_ADM_SOURCEM_SOURCE.ZC_ADM_SOURCEMIT_SOURCE_C = PAT_ENC_HSP.ZC_ADM_SOURCEMIT_SOURCE_C AND PAT_ENC_HSP.ZC_ADM_SOURCEMIT_SOURCE_C = 1	
-	LEFT JOIN Clarity.ZC_PAT_CLASS  (NOLOCK) ON ZC_PAT_CLASS.ZC_ADM_SOURCET_PAT_CLASS_C = PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C
-	LEFT JOIN Clarity.CLARITY_DEP ON PAT_ENC.EFFECTIVE_DEPT_ID = CLARITY_DEP.DEPARTMENT_ID
-	LEFT JOIN Clarity.CLARITY_SA  ON CLARITY_ADT.SERV_AREA_ID = COALESCE(PAT_ENC.SERV_AREA_ID, CLARITY_DEP.SERV_AREA_ID))		--ZC_ADM_SOURCEDED ON 11/17/2021 TO TAKE CARE OF DEPRECATED SERV_AREA_ID COLUMN IN PAT_ENC TABLE
-	LEFT JOIN Clarity.ZC_PAT_SERVICE S ON CLARITY_ZC_ADM_SOURCET.PAT_SERVICE_C = ZC_PAT_SERVICE.HOSP_SERV_C
-	LEFT JOIN Clarity.CLARITY_PRC PR ON CLARITY_PRC.PRC_ID = PAT_ENC.APPT_PRC_ID
-	WHERE (APPT_STATUS_C= 2 OR APPT_STATUS_C IS NULL)
-		AND (PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C IS NULL OR PAT_ENC_HSP.ZC_ADM_SOURCET_PAT_CLASS_C <> 9509) --Lab Specimen 
-	
+	, COALESCE(E.SERV_AREA_ID, DP.SERV_AREA_ID) AS SERV_AREA_ID															 	--ADDED ON 11/17/2021 TO TAKE CARE OF DEPRECATED SERV_AREA_ID COLUMN IN PAT_ENC TABLE	
+	, SA.SERV_AREA_NAME
+	, 'EVENT_ID:' + RTRIM(LTRIM(A.EVENT_ID)) 													AS source_recordid	
+	FROM  Clarity.dbo.PAT_ENC AS E 
+	INNER JOIN EPIC_PATIENT_VISITS P  ON (P.person_source_value = E.PAT_ID)
+	INNER JOIN Clarity.dbo.SD_F2F_ENC_TYPE VT  ON (VT.SD_F2F_ENC_TYPE_C = E.ENC_TYPE_C)
+	--LEFT JOIN Clarity.dbo.CLARITY_SA  SA ON (SA.SERV_AREA_ID = E.SERV_AREA_ID)
+	LEFT JOIN Clarity.dbo.PAT_ENC_HSP H  ON (E.PAT_ENC_CSN_ID = H.PAT_ENC_CSN_ID)
+	LEFT JOIN ClarityCustomDev.temp.provider  AS PRV ON H.BILL_ATTEND_PROV_ID = PRV.provider_source_value
+	LEFT JOIN ClarityCustomDev.temp.provider  AS PRV1 ON E.VISIT_PROV_ID = PRV1.provider_source_value	
+	LEFT JOIN Clarity.dbo.CLARITY_ADT A  ON E.PAT_ENC_CSN_ID = A.PAT_ENC_CSN_ID AND A.EVENT_TYPE_C NOT IN (4, 5, 6) AND A.SEQ_NUM_IN_ENC IS NOT NULL
+	JOIN Clarity.dbo.CLARITY_ADT B  ON A.PAT_ID = B.PAT_ID AND A.PAT_ENC_CSN_ID = B.PAT_ENC_CSN_ID AND B.EVENT_TYPE_C IN (2, 4)
+		AND B.EVENT_ID IN (A.NEXT_OUT_EVENT_ID)
+	LEFT JOIN Clarity.dbo.ZC_DISCH_DISP D  ON (D.DISCH_DISP_C = H.DISCH_DISP_C AND ISNUMERIC(H.DISCH_DISP_C) = 1)
+	LEFT JOIN Clarity.dbo.ZC_ADM_SOURCE AD  ON AD.ADMIT_SOURCE_C = H.ADMIT_SOURCE_C AND ISNUMERIC(H.ADMIT_SOURCE_C) = 1	
+	LEFT JOIN Clarity.dbo.ZC_PAT_CLASS PC  ON (PC.ADT_PAT_CLASS_C = H.ADT_PAT_CLASS_C)
+	LEFT JOIN Clarity.dbo.CLARITY_DEP DP ON E.EFFECTIVE_DEPT_ID = DP.DEPARTMENT_ID
+	LEFT JOIN Clarity.dbo.CLARITY_SA AS SA  ON (SA.SERV_AREA_ID = COALESCE(E.SERV_AREA_ID, DP.SERV_AREA_ID))		--ADDED ON 11/17/2021 TO TAKE CARE OF DEPRECATED SERV_AREA_ID COLUMN IN PAT_ENC TABLE
+	LEFT JOIN Clarity.dbo.ZC_PAT_SERVICE S ON A.PAT_SERVICE_C = S.HOSP_SERV_C
+	LEFT JOIN Clarity.dbo.CLARITY_PRC PR ON PR.PRC_ID = E.APPT_PRC_ID
+	WHERE ([APPT_STATUS_C] = 2 OR APPT_STATUS_C IS NULL)
+		AND (H.ADT_PAT_CLASS_C IS NULL OR H.ADT_PAT_CLASS_C <> 9509) --Specimen 
+			
 ) a
