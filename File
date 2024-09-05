@@ -1,5 +1,9 @@
 https://roboquery.com/app/convert-Microsoft_SQL_Server-to-snowflake
 
+
+
+Hi -If the Patient is on any Inhibitors or Opioid do we find this infomration on medication tab or should be checking else where
+
 WITH EPIC_PATIENT_VISITS AS 
 	(
 SELECT 	DISTINCT
