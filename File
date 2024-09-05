@@ -1,8 +1,7 @@
 https://roboquery.com/app/convert-Microsoft_SQL_Server-to-snowflake
 
 
-
-Hi -If the Patient is on any Inhibitors or Opioid do we find this infomration on medication tab or should be checking else where
+"If the patient is on any inhibitors or opioids, can this information be found under the medication tab, or should we check elsewhere
 
 WITH EPIC_PATIENT_VISITS AS 
 	(
