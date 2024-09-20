@@ -1,1 +1,18 @@
-I asked Doona to review the EPIC RWB template for discharges and daily admissions, and to narrow down the results to Cardiology. Recreating something in SQL might take longer than expected
+USE [msdb]
+GO
+
+/****** Object:  Operator [BI Team]    Script Date: 9/20/2024 4:29:36 PM ******/
+EXEC msdb.dbo.sp_add_operator @name=N'BI Team', 
+		@enabled=1, 
+		@weekday_pager_start_time=90000, 
+		@weekday_pager_end_time=180000, 
+		@saturday_pager_start_time=90000, 
+		@saturday_pager_end_time=180000, 
+		@sunday_pager_start_time=90000, 
+		@sunday_pager_end_time=180000, 
+		@pager_days=0, 
+		@email_address=N'sboga@wakehealth.edu;6303283869@txt.att.net;3368485783@txt.att.net', 
+		@category_name=N'[Uncategorized]'
+GO
+
+
