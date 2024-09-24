@@ -1,18 +1,1 @@
-USE [msdb]
-GO
-
-/****** Object:  Operator [BI Team]    Script Date: 9/20/2024 4:29:36 PM ******/
-EXEC msdb.dbo.sp_add_operator @name=N'BI Team', 
-		@enabled=1, 
-		@weekday_pager_start_time=90000, 
-		@weekday_pager_end_time=180000, 
-		@saturday_pager_start_time=90000, 
-		@saturday_pager_end_time=180000, 
-		@sunday_pager_start_time=90000, 
-		@sunday_pager_end_time=180000, 
-		@pager_days=0, 
-		@email_address=N'sboga@wakehealth.edu;6303283869@txt.att.net;3368485783@txt.att.net', 
-		@category_name=N'[Uncategorized]'
-GO
-
-
+From what I understand, the map files were already built as part of the process. I'm not sure what was discussed earlier, but I see both the data file and map files in today's data extract.
