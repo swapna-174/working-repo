@@ -1,1 +1,18 @@
-Good morning! I hope everyone is doing well. The weather in NC is pretty bad, but I hear it's even worse in Florida. Watching the news and weather reports is really scary!
+USE [msdb]
+GO
+
+/****** Object:  Operator [BI Team]    Script Date: 9/27/2024 2:36:13 PM ******/
+EXEC msdb.dbo.sp_add_operator @name=N'BI Team', 
+		@enabled=1, 
+		@weekday_pager_start_time=90000, 
+		@weekday_pager_end_time=180000, 
+		@saturday_pager_start_time=90000, 
+		@saturday_pager_end_time=180000, 
+		@sunday_pager_start_time=90000, 
+		@sunday_pager_end_time=180000, 
+		@pager_days=0, 
+		@email_address=N'sboga@wakehealth.edu;6303283869@txt.att.net;3368485783@txt.att.net', 
+		@category_name=N'[Uncategorized]'
+GO
+
+
