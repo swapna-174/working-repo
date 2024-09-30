@@ -1,3 +1,2 @@
-We have a request for the Medication DataMart. This DataMart captures various medications listed on the patient chart, including Inpatient, Outpatient, AMB, and at-home medications.
 
-We need to schedule this on the ADF to execute the script daily like the others. Attached is the script for reference.
+We are working on scheduling the daily extracts for PATHIAI which include the Lab Orders and results .Please can you provide us with SFTP detail in order for our team to send the daily file . The  process is scheduled to  run daily at 1:00  pm our end.
