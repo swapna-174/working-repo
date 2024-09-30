@@ -1,4 +1,3 @@
+We have a request for the Medication DataMart. This DataMart captures various medications listed on the patient chart, including Inpatient, Outpatient, AMB, and at-home medications.
 
-We have request for  Medication DataMart -This Datamart captures various Medication  listed on patient chart that  includes both Inpatient ,Outpatient , AMB and at home medications.
-
-We need to schedule this on the ADF to  execute this script on daily bases like the other ones .Attached is the script for the same 
+We need to schedule this on the ADF to execute the script daily like the others. Attached is the script for reference.
