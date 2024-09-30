@@ -1,1 +1,4 @@
-I was asked to extract MMIS Barcode and distributor information for implants. Do we know where I can get this? I checked the SUP 500 but had no luck
+
+We have request for  Medication DataMart -This Datamart captures various Medication  listed on patient chart that  includes both Inpatient ,Outpatient , AMB and at home medications.
+
+We need to schedule this on the ADF to  execute this script on daily bases like the other ones .Attached is the script for the same 
