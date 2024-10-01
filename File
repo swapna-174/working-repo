@@ -1,4 +1,4 @@
-select *from patientdim 
-left join encounterfact on Patientdim.durablekey=encounterfact.Patientdurablekey
-where encounterfact.Patientdurablekey is null
-and type=='Hospital Encounter'
+Mahesh,
+
+
+We have the extract ready for Premier Surgical Supply . Since we do not have any supplies listed for sugery in POC .I will have to test the code once we go line and have some surgery performed at the hospiatl
