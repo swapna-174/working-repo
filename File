@@ -1,18 +1,1 @@
-USE [msdb]
-GO
-
-/****** Object:  Operator [BI Team]    Script Date: 9/30/2024 4:12:07 PM ******/
-EXEC msdb.dbo.sp_add_operator @name=N'BI Team', 
-		@enabled=1, 
-		@weekday_pager_start_time=90000, 
-		@weekday_pager_end_time=180000, 
-		@saturday_pager_start_time=90000, 
-		@saturday_pager_end_time=180000, 
-		@sunday_pager_start_time=90000, 
-		@sunday_pager_end_time=180000, 
-		@pager_days=0, 
-		@email_address=N'sboga@wakehealth.edu;6303283869@txt.att.net;3368485783@txt.att.net', 
-		@category_name=N'[Uncategorized]'
-GO
-
-
+Did we hear back from Epic regarding the deceased status? I'm still seeing patients in Caboodle marked as alive, but in Hyperspace, they are showing as deceased
