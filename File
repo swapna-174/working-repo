@@ -1,1 +1,4 @@
-I recall we had a discussion with Epic about the deceased status, but I'm unsure of the current status or conclusion
+select *from patientdim 
+left join encounterfact on Patientdim.durablekey=encounterfact.Patientdurablekey
+where encounterfact.Patientdurablekey is null
+and type=='Hospital Encounter'
