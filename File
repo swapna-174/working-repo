@@ -1,152 +1,52 @@
-SELECT distinct 
-	pt.ControlNo,
-	enc.encounterID,
-	cast(enc.date as date) as "Encounter Date",
-	PrimaryInsDetails.subscriberNo as "Primary Insurance ID",
-	ptu.ulname as "Patient Last Name",
-	ptu.ufname as "Patient First Name",
-	ptu.dob as "Patient DOB",
-	insgroups.Name as "Insurance Group",
-	PrimaryIns.insuranceName as "Primary Insurance Name",
-	PrimaryInsDetails.subscriberNo as "Primary Insurance Subscriber Number",
-	apptdocu.ulname + ', ' + apptdocu.ufname as "Provider Name",
-	apptdoc.NPI as "NPI",
-	cast(DtofDischarge.[Date of Discharge] as date) as "Date of Discharge",
-	cast( outreach.[Date of Interactive Outreach] as date) as "Date of Interactive Outreach",
-	cast( f2f.[Face to Face Scheduled] as date) as "Face to Face Scheduled",
-	cast(meds.[Medications Reconciled Post Acute] as date) as "Medications Reconciled Post Acute",
-	"HospFU".[Hospital FU Date],
-	telog.[Documenting Staff]
-	--HospFU.VisitType
-	
-FROM
-	db_tnpcgl.dbo.enc
-	join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
-	left outer join db_tnpcgl.dbo.users ptu on ptu.uid = pt.pid
-	left outer join db_tnpcgl.dbo.doctors apptdoc on apptdoc.doctorID = enc.doctorID
-	left outer join db_tnpcgl.dbo.users apptdocu on apptdocu.uid = apptdoc.doctorID
-	left outer join db_tnpcgl.dbo.insurancedetail PrimaryInsDetails on pt.pid = PrimaryInsDetails.pid and PrimaryInsDetails.SeqNo = 1 and PrimaryInsDetails.DeleteFlag = 0
-   	left outer join db_tnpcgl.dbo.insurance PrimaryIns on PrimaryInsDetails.insid = PrimaryIns.insId and PrimaryInsDetails.SeqNo = 1 and PrimaryIns.deleteFlag = 0
-	left outer join db_tnpcgl.dbo.insgroupmembers on insgroupmembers.InsuranceId = PrimaryIns.insId
-	left outer join db_tnpcgl.dbo.insgroups on insgroups.id = insgroupmembers.insgroupid and insgroups.deleteFlag = 0
-	left outer join (select distinct
-			sdd.name,
-			ssh.value as "Date of Discharge",
-			items.itemName,
-			ssh.detailId as "Detail ID",
-			pt.ControlNo,
-			cast(enc.date as date) as "Encounter Date",
-			ssh.encounterId
+SELECT DISTINCT
+    pt.PAT_ID AS "ControlNo",
+    enc.PAT_ENC_CSN_ID AS "EncounterID",
+    enc.CONTACT_DATE AS "Encounter Date",
+    patins.SUBSCRIBER_ID AS "Primary Insurance ID",
+    pt.PATIENT_L_NAME AS "Patient Last Name",
+    pt.PATIENT_F_NAME AS "Patient First Name",
+    pt.BIRTH_DATE AS "Patient DOB",
+    grp_plan.GROUP_NAME AS "Insurance Group",
+    plan.PLAN_NAME AS "Primary Insurance Name",
+    patins.SUBSCRIBER_ID AS "Primary Insurance Subscriber Number",
+    prov.PROVIDER_L_NAME + ', ' + prov.PROVIDER_F_NAME AS "Provider Name",
+    prov.NPI AS "NPI",
+    enc.DSCH_DATE AS "Date of Discharge",
+    outreach_obs.VALUE_DATE AS "Date of Interactive Outreach",
+    f2f_obs.VALUE_DATE AS "Face to Face Scheduled",
+    meds_obs.VALUE_DATE AS "Medications Reconciled Post Acute",
+    hosp_enc.HOSP_FU_DATE AS "Hospital FU Date",
+    doclog.DOC_USER_NAME AS "Documenting Staff"
+    
+FROM 
+    CLARITY_PATIENT pt
+    JOIN CLARITY_PAT_ENC enc ON pt.PAT_ID = enc.PAT_ID
+    LEFT JOIN CLARITY_SER prov ON prov.PROV_ID = enc.PROV_ID
+    LEFT JOIN CLARITY_PAT_INS patins ON pt.PAT_ID = patins.PAT_ID AND patins.SEQ_NO = 1
+    LEFT JOIN CLARITY_PLAN plan ON plan.PLAN_ID = patins.PLAN_ID
+    LEFT JOIN CLARITY_GRP_PLAN grp_plan ON grp_plan.GRP_PLAN_ID = patins.GRP_PLAN_ID
 
-		from 
-			db_tnpcgl.dbo.structsocialhistory ssh
-			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
-			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
-			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
-			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
-	
-		where
-			ssh.detailId = 5345 --Social Hx > TCM > Date of Discharge
-			)DtofDischarge on DtofDischarge.encounterId = enc.encounterID AND DtofDischarge."Date of Discharge" IS NOT NULL
-
-	left outer join(select distinct 
-			sdd.name,
-			ssh.value as "Date of Interactive Outreach",
-			items.itemName,
-			ssh.detailId as "Detail ID",
-			pt.ControlNo,
-			cast(enc.date as date) as "Encounter Date",
-			ssh.encounterId
-
-		from 
-			db_tnpcgl.dbo.structsocialhistory ssh
-			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
-			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
-			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
-			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
-	
-		where
-			ssh.detailId = 5346 --Social Hx > TCM > Date of Interactive Outreach
-			)outreach on outreach.encounterId = enc.encounterID
-
-	left outer join(select distinct 
-			sdd.name,
-			ssh.value as "Face to Face Scheduled",
-			items.itemName,
-			ssh.detailId as "Detail ID",
-			pt.ControlNo,
-			cast(enc.date as date) as "Encounter Date",
-			ssh.encounterId
-
-		from 
-			db_tnpcgl.dbo.structsocialhistory ssh
-			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
-			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
-			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
-			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
-		where
-			ssh.detailId = 5347 --Social Hx > TCM > "Face to Face Scheduled"
-			)f2f on f2f.encounterId = enc.encounterID
-
-	left outer join(select distinct 
-			sdd.name,
-			ssh.value as "Medications Reconciled Post Acute",
-			items.itemName,
-			ssh.detailId as "Detail ID",
-			pt.ControlNo,
-			cast(enc.date as date) as "Encounter Date",
-			ssh.encounterId
-
-		from 
-			db_tnpcgl.dbo.structsocialhistory ssh
-			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
-			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
-			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
-			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
-	
-		where
-			ssh.detailId = 5348 --Social Hx > TCM > "Medications Reconciled Post Acute"
-			)meds on meds.encounterId = enc.encounterID
-
-	left outer join(select
-			cast(enc.date as date) as "Hospital FU Date",
-			enc.encounterID as "Encounter ID",
-			enc.patientID,
-			enc.VisitType
-
-		from
-			db_tnpcgl.dbo.enc
-
-		where
-				enc.encType = 1
-			and	enc.STATUS = 'CHK'
-			and	enc.VisitType = 'Hosp F/U'
-			--and	enc.transitionofcare = 1
-			)HospFU on HospFU.patientID = pt.pid and HospFU.[Hospital FU Date] = [Face to Face Scheduled]
-
-	left outer join(select 
-			log.encounterId, 
-			users.ulname + ', ' + users.ufname as "Documenting Staff"
-	
-		from 
-			db_tnpcgl.dbo.log
-			left outer join db_tnpcgl.dbo.users on users.uid = log.userId
-		where
-			log.actionFlag = 4)telog on telog.encounterId = enc.encounterID			
-WHERE
-		cast( outreach.[Date of Interactive Outreach] as date) between DATEADD(day, -7, CAST(GETDATE() AS date)) and DATEADD(day, -1, CAST(GETDATE() AS date))
-	and	enc.encType = 2
-	and	enc.deleteFlag = 0
-	and	ptu.ulname not like 'zzz%'
-	and 	(insgroups.Name in ('Cigna', 'Medicare')
-	or	PrimaryIns.insuranceName like '%Cigna%'
-	or	PrimaryIns.insuranceName like '%UHC%')
-	and 	((CASE WHEN DtofDischarge."Date of Discharge" is null then 0 else 1 end) +
-		(CASE WHEN outreach."Date of Interactive Outreach" is null then 0 else 1 end) +
-		(CASE WHEN f2f."Face to Face Scheduled" is null then 0 else 1 end) +
-		(CASE WHEN meds."Medications Reconciled Post Acute" is null then 0 else 1 end)) > 0
-
-
-
-	
-	
+    -- Discharge and social history data
+    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5345) DtofDischarge ON DtofDischarge.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
+    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5346) outreach_obs ON outreach_obs.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
+    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5347) f2f_obs ON f2f_obs.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
+    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5348) meds_obs ON meds_obs.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
+    
+    -- Hospital follow-up
+    LEFT JOIN (SELECT CONTACT_DATE AS HOSP_FU_DATE, PAT_ID, PAT_ENC_CSN_ID FROM CLARITY_PAT_ENC WHERE ENC_TYPE = 'Hosp F/U') hosp_enc ON hosp_enc.PAT_ID = pt.PAT_ID
+    
+    -- Documenting staff logs
+    LEFT JOIN (SELECT PAT_ENC_CSN_ID, USER_L_NAME + ', ' + USER_F_NAME AS "Documenting Staff" FROM DOCUMENTATION_LOG WHERE ACTION_FLAG = 4) doclog ON doclog.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
+    
+WHERE 
+    outreach_obs.VALUE_DATE BETWEEN DATEADD(DAY, -7, CAST(GETDATE() AS DATE)) AND DATEADD(DAY, -1, CAST(GETDATE() AS DATE))
+    AND enc.ENC_TYPE = 2
+    AND enc.DELETE_FLAG = 0
+    AND pt.PATIENT_L_NAME NOT LIKE 'zzz%'
+    AND (grp_plan.GROUP_NAME IN ('Cigna', 'Medicare') 
+        OR plan.PLAN_NAME LIKE '%Cigna%' 
+        OR plan.PLAN_NAME LIKE '%UHC%')
+    AND ((CASE WHEN DtofDischarge.VALUE_DATE IS NULL THEN 0 ELSE 1 END) +
+        (CASE WHEN outreach_obs.VALUE_DATE IS NULL THEN 0 ELSE 1 END) +
+        (CASE WHEN f2f_obs.VALUE_DATE IS NULL THEN 0 ELSE 1 END) +
+        (CASE WHEN meds_obs.VALUE_DATE IS NULL THEN 0 ELSE 1 END)) > 0;
