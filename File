@@ -1,1 +1,2 @@
-I spoke with the HealthChoice team today, and they mentioned that there are three weekly reports and five quarterly reports. Ashley from the MMG team indicated that you are already working on the weekly report. Do you have the SQL code ready for these extracts? They would like to schedule something from Epic starting this Thursday.
+SELECT DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 1, 0) AS PreviousMonthStart;
+SELECT DATEADD(SECOND, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)) AS PreviousMonthEnd;
