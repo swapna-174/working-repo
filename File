@@ -1,2 +1,152 @@
-SELECT DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 1, 0) AS PreviousMonthStart;
-SELECT DATEADD(SECOND, -1, DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()), 0)) AS PreviousMonthEnd;
+SELECT distinct 
+	pt.ControlNo,
+	enc.encounterID,
+	cast(enc.date as date) as "Encounter Date",
+	PrimaryInsDetails.subscriberNo as "Primary Insurance ID",
+	ptu.ulname as "Patient Last Name",
+	ptu.ufname as "Patient First Name",
+	ptu.dob as "Patient DOB",
+	insgroups.Name as "Insurance Group",
+	PrimaryIns.insuranceName as "Primary Insurance Name",
+	PrimaryInsDetails.subscriberNo as "Primary Insurance Subscriber Number",
+	apptdocu.ulname + ', ' + apptdocu.ufname as "Provider Name",
+	apptdoc.NPI as "NPI",
+	cast(DtofDischarge.[Date of Discharge] as date) as "Date of Discharge",
+	cast( outreach.[Date of Interactive Outreach] as date) as "Date of Interactive Outreach",
+	cast( f2f.[Face to Face Scheduled] as date) as "Face to Face Scheduled",
+	cast(meds.[Medications Reconciled Post Acute] as date) as "Medications Reconciled Post Acute",
+	"HospFU".[Hospital FU Date],
+	telog.[Documenting Staff]
+	--HospFU.VisitType
+	
+FROM
+	db_tnpcgl.dbo.enc
+	join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
+	left outer join db_tnpcgl.dbo.users ptu on ptu.uid = pt.pid
+	left outer join db_tnpcgl.dbo.doctors apptdoc on apptdoc.doctorID = enc.doctorID
+	left outer join db_tnpcgl.dbo.users apptdocu on apptdocu.uid = apptdoc.doctorID
+	left outer join db_tnpcgl.dbo.insurancedetail PrimaryInsDetails on pt.pid = PrimaryInsDetails.pid and PrimaryInsDetails.SeqNo = 1 and PrimaryInsDetails.DeleteFlag = 0
+   	left outer join db_tnpcgl.dbo.insurance PrimaryIns on PrimaryInsDetails.insid = PrimaryIns.insId and PrimaryInsDetails.SeqNo = 1 and PrimaryIns.deleteFlag = 0
+	left outer join db_tnpcgl.dbo.insgroupmembers on insgroupmembers.InsuranceId = PrimaryIns.insId
+	left outer join db_tnpcgl.dbo.insgroups on insgroups.id = insgroupmembers.insgroupid and insgroups.deleteFlag = 0
+	left outer join (select distinct
+			sdd.name,
+			ssh.value as "Date of Discharge",
+			items.itemName,
+			ssh.detailId as "Detail ID",
+			pt.ControlNo,
+			cast(enc.date as date) as "Encounter Date",
+			ssh.encounterId
+
+		from 
+			db_tnpcgl.dbo.structsocialhistory ssh
+			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
+			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
+			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
+			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
+	
+		where
+			ssh.detailId = 5345 --Social Hx > TCM > Date of Discharge
+			)DtofDischarge on DtofDischarge.encounterId = enc.encounterID AND DtofDischarge."Date of Discharge" IS NOT NULL
+
+	left outer join(select distinct 
+			sdd.name,
+			ssh.value as "Date of Interactive Outreach",
+			items.itemName,
+			ssh.detailId as "Detail ID",
+			pt.ControlNo,
+			cast(enc.date as date) as "Encounter Date",
+			ssh.encounterId
+
+		from 
+			db_tnpcgl.dbo.structsocialhistory ssh
+			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
+			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
+			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
+			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
+	
+		where
+			ssh.detailId = 5346 --Social Hx > TCM > Date of Interactive Outreach
+			)outreach on outreach.encounterId = enc.encounterID
+
+	left outer join(select distinct 
+			sdd.name,
+			ssh.value as "Face to Face Scheduled",
+			items.itemName,
+			ssh.detailId as "Detail ID",
+			pt.ControlNo,
+			cast(enc.date as date) as "Encounter Date",
+			ssh.encounterId
+
+		from 
+			db_tnpcgl.dbo.structsocialhistory ssh
+			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
+			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
+			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
+			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
+		where
+			ssh.detailId = 5347 --Social Hx > TCM > "Face to Face Scheduled"
+			)f2f on f2f.encounterId = enc.encounterID
+
+	left outer join(select distinct 
+			sdd.name,
+			ssh.value as "Medications Reconciled Post Acute",
+			items.itemName,
+			ssh.detailId as "Detail ID",
+			pt.ControlNo,
+			cast(enc.date as date) as "Encounter Date",
+			ssh.encounterId
+
+		from 
+			db_tnpcgl.dbo.structsocialhistory ssh
+			left outer join db_tnpcgl.dbo.structdatadetail sdd on sdd.Id = ssh.detailId and sdd.deleteFlag = 0
+			left outer join db_tnpcgl.dbo.items items on items.itemID = ssh.itemId
+			left outer join db_tnpcgl.dbo.enc on enc.encounterID = ssh.encounterId
+			left outer join db_tnpcgl.dbo.patients pt on pt.pid = enc.patientID
+	
+		where
+			ssh.detailId = 5348 --Social Hx > TCM > "Medications Reconciled Post Acute"
+			)meds on meds.encounterId = enc.encounterID
+
+	left outer join(select
+			cast(enc.date as date) as "Hospital FU Date",
+			enc.encounterID as "Encounter ID",
+			enc.patientID,
+			enc.VisitType
+
+		from
+			db_tnpcgl.dbo.enc
+
+		where
+				enc.encType = 1
+			and	enc.STATUS = 'CHK'
+			and	enc.VisitType = 'Hosp F/U'
+			--and	enc.transitionofcare = 1
+			)HospFU on HospFU.patientID = pt.pid and HospFU.[Hospital FU Date] = [Face to Face Scheduled]
+
+	left outer join(select 
+			log.encounterId, 
+			users.ulname + ', ' + users.ufname as "Documenting Staff"
+	
+		from 
+			db_tnpcgl.dbo.log
+			left outer join db_tnpcgl.dbo.users on users.uid = log.userId
+		where
+			log.actionFlag = 4)telog on telog.encounterId = enc.encounterID			
+WHERE
+		cast( outreach.[Date of Interactive Outreach] as date) between DATEADD(day, -7, CAST(GETDATE() AS date)) and DATEADD(day, -1, CAST(GETDATE() AS date))
+	and	enc.encType = 2
+	and	enc.deleteFlag = 0
+	and	ptu.ulname not like 'zzz%'
+	and 	(insgroups.Name in ('Cigna', 'Medicare')
+	or	PrimaryIns.insuranceName like '%Cigna%'
+	or	PrimaryIns.insuranceName like '%UHC%')
+	and 	((CASE WHEN DtofDischarge."Date of Discharge" is null then 0 else 1 end) +
+		(CASE WHEN outreach."Date of Interactive Outreach" is null then 0 else 1 end) +
+		(CASE WHEN f2f."Face to Face Scheduled" is null then 0 else 1 end) +
+		(CASE WHEN meds."Medications Reconciled Post Acute" is null then 0 else 1 end)) > 0
+
+
+
+	
+	
