@@ -1,52 +1,72 @@
-SELECT DISTINCT
-    pt.PAT_ID AS "ControlNo",
-    enc.PAT_ENC_CSN_ID AS "EncounterID",
-    enc.CONTACT_DATE AS "Encounter Date",
-    patins.SUBSCRIBER_ID AS "Primary Insurance ID",
-    pt.PATIENT_L_NAME AS "Patient Last Name",
-    pt.PATIENT_F_NAME AS "Patient First Name",
-    pt.BIRTH_DATE AS "Patient DOB",
-    grp_plan.GROUP_NAME AS "Insurance Group",
-    plan.PLAN_NAME AS "Primary Insurance Name",
-    patins.SUBSCRIBER_ID AS "Primary Insurance Subscriber Number",
-    prov.PROVIDER_L_NAME + ', ' + prov.PROVIDER_F_NAME AS "Provider Name",
-    prov.NPI AS "NPI",
-    enc.DSCH_DATE AS "Date of Discharge",
-    outreach_obs.VALUE_DATE AS "Date of Interactive Outreach",
-    f2f_obs.VALUE_DATE AS "Face to Face Scheduled",
-    meds_obs.VALUE_DATE AS "Medications Reconciled Post Acute",
-    hosp_enc.HOSP_FU_DATE AS "Hospital FU Date",
-    doclog.DOC_USER_NAME AS "Documenting Staff"
-    
-FROM 
-    CLARITY_PATIENT pt
-    JOIN CLARITY_PAT_ENC enc ON pt.PAT_ID = enc.PAT_ID
-    LEFT JOIN CLARITY_SER prov ON prov.PROV_ID = enc.PROV_ID
-    LEFT JOIN CLARITY_PAT_INS patins ON pt.PAT_ID = patins.PAT_ID AND patins.SEQ_NO = 1
-    LEFT JOIN CLARITY_PLAN plan ON plan.PLAN_ID = patins.PLAN_ID
-    LEFT JOIN CLARITY_GRP_PLAN grp_plan ON grp_plan.GRP_PLAN_ID = patins.GRP_PLAN_ID
+    select p.PAT_NAME                   Patient
+           ,p.PAT_MRN_ID                MRN
+           ,readmit_har.HSP_ACCOUNT_ID  "Readmit HAR"
+           ,zha.NAME                    "Readmit Har Class"
+           ,PriorDischarge.PriorDC      "Prior Discharge"           
+           ,readmit_peh.HOSP_ADMSN_TIME "Readmit Admission"
+           ,readmit_peh.HOSP_DISCH_TIME "Readmit Discharge"
 
-    -- Discharge and social history data
-    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5345) DtofDischarge ON DtofDischarge.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
-    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5346) outreach_obs ON outreach_obs.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
-    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5347) f2f_obs ON f2f_obs.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
-    LEFT JOIN (SELECT PAT_ENC_CSN_ID, VALUE_DATE FROM OBSERVATION_FACT WHERE ITEM_ID = 5348) meds_obs ON meds_obs.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
-    
-    -- Hospital follow-up
-    LEFT JOIN (SELECT CONTACT_DATE AS HOSP_FU_DATE, PAT_ID, PAT_ENC_CSN_ID FROM CLARITY_PAT_ENC WHERE ENC_TYPE = 'Hosp F/U') hosp_enc ON hosp_enc.PAT_ID = pt.PAT_ID
-    
-    -- Documenting staff logs
-    LEFT JOIN (SELECT PAT_ENC_CSN_ID, USER_L_NAME + ', ' + USER_F_NAME AS "Documenting Staff" FROM DOCUMENTATION_LOG WHERE ACTION_FLAG = 4) doclog ON doclog.PAT_ENC_CSN_ID = enc.PAT_ENC_CSN_ID
-    
-WHERE 
-    outreach_obs.VALUE_DATE BETWEEN DATEADD(DAY, -7, CAST(GETDATE() AS DATE)) AND DATEADD(DAY, -1, CAST(GETDATE() AS DATE))
-    AND enc.ENC_TYPE = 2
-    AND enc.DELETE_FLAG = 0
-    AND pt.PATIENT_L_NAME NOT LIKE 'zzz%'
-    AND (grp_plan.GROUP_NAME IN ('Cigna', 'Medicare') 
-        OR plan.PLAN_NAME LIKE '%Cigna%' 
-        OR plan.PLAN_NAME LIKE '%UHC%')
-    AND ((CASE WHEN DtofDischarge.VALUE_DATE IS NULL THEN 0 ELSE 1 END) +
-        (CASE WHEN outreach_obs.VALUE_DATE IS NULL THEN 0 ELSE 1 END) +
-        (CASE WHEN f2f_obs.VALUE_DATE IS NULL THEN 0 ELSE 1 END) +
-        (CASE WHEN meds_obs.VALUE_DATE IS NULL THEN 0 ELSE 1 END)) > 0;
+           ,CASE WHEN Prior_PrimaryDx.Pr_DX_Group IS NOT NULL THEN Prior_PrimaryDx.Pr_DX_Group
+                  WHEN Prior_PrimaryDx.Primary_Dx IS NOT NULL THEN UPPER(Prior_PrimaryDx.Primary_Dx)
+                    ELSE ' ' END         "Prior Primary DX Group/Dx"
+           ,coalesce(zcrace.NAME,' ')    Race
+           ,parloc.RPT_GRP_ONE           "Readmit Parent Hospital"
+           ,readmit_peh.PAT_ENC_CSN_ID   "Readmit CSN"
+           ,PriorDischarge.PriorCSN        "Prior CSN"
+           ,p.pat_id                     "Pat ID"
+  
+    from pat_enc_hsp readmit_peh
+          INNER JOIN patient p on readmit_peh.PAT_ID = p.PAT_ID
+          CROSS APPLY (
+                SELECT PriorPeh.PAT_ENC_CSN_ID PriorCSN
+                       , PriorPeh.HOSP_DISCH_TIME PriorDC
+                FROM PAT_ENC_HSP PriorPeh 
+                  LEFT JOIN hsp_account PriorHAR ON PriorPeh.HSP_ACCOUNT_ID = PriorHAR.HSP_ACCOUNT_ID
+                  
+                WHERE  trunc(readmit_peh.HOSP_ADMSN_TIME) > trunc(PriorPeh.HOSP_DISCH_TIME)   --current adm after prior dc
+                    AND trunc(readmit_peh.HOSP_ADMSN_TIME) <= (trunc(PriorPeh.HOSP_DISCH_TIME) + 30)  --and current
+                    --AND PriorHAR.ACCT_CLASS_HA_C IN ('101')  --IP or ED-to_IP       ----  103-ED,104-Obs
+                    --AND PriorPeh.ADT_PATIENT_STAT_C <> 6 --EXCLUDE HOVs!
+                    AND PriorPeh.PAT_ID = readmit_peh.PAT_ID
+                    
+                    AND PriorPeh.PAT_ENC_CSN_ID IN (
+                            SELECT enc.pat_enc_csn_id
+                            FROM ip_flwsht_meas ip_meas               
+                              inner join ip_flwsht_rec ip_rec on ip_meas.fsd_id = ip_rec.fsd_id
+                              inner join ip_flo_gp_data ip_data on ip_meas.flo_meas_id = ip_data.flo_meas_id
+                              inner join ip_flt_data flt on ip_meas.FLT_ID = flt.TEMPLATE_ID
+                              inner join pat_enc_hsp enc on ip_rec.INPATIENT_DATA_ID = enc.inpatient_data_id
+                            WHERE ip_meas.FLO_MEAS_ID = '3042002849' --Enrollment Start Date
+                                  and ip_meas.ISACCEPTED_YN <> 'N'
+                             )  --get the latest entry in the encounter
+               )PriorDischarge  
+     
+          LEFT JOIN clarity_dep dep on readmit_peh.DEPARTMENT_ID = dep.DEPARTMENT_ID
+            LEFT JOIN clarity_loc loc on dep.REV_LOC_ID = loc.LOC_ID
+            LEFT JOIN clarity_loc parloc on loc.HOSP_PARENT_LOC_ID = parloc.LOC_ID
+          LEFT JOIN hsp_account readmit_har on readmit_peh.HSP_ACCOUNT_ID = readmit_har.HSP_ACCOUNT_ID
+            LEFT JOIN 	ZC_ACCT_CLASS_HA zha on readmit_har.ACCT_CLASS_HA_C = zha.ACCT_CLASS_HA_C
+          LEFT JOIN patient_race race on p.PAT_ID = race.pat_ID and race.line = 1 --preferred race
+            LEFT JOIN 	ZC_PATIENT_RACE zcrace on race.PATIENT_RACE_C = zcrace.PATIENT_RACE_C     
+          
+          OUTER APPLY ( SELECT
+                              HARDX.HSP_ACCOUNT_ID ,  
+                              HARDX.DX_ID, 
+                              peh_PRIMDX.PAT_ENC_CSN_ID HAR_CSN,
+                              EDG.DX_NAME Primary_Dx,
+                               --EDG.CURRENT_ICD10_LIST HFicd10_Primary,
+                              EDG.DX_GROUP Pr_DX_Group
+                --                      EDG.RECORD_TYPE_C RecType,   --record type of dx record: 1-Term, 2-Code, 3 Both code and term
+                --                      EDG.REF_BILL_CODE RBC
+                            FROM
+                              PAT_ENC_HSP peh_PRIMDX 
+                              LEFT JOIN HSP_ACCT_DX_LIST HARDX ON peh_PRIMDX.HSP_ACCOUNT_ID = HARDX.HSP_ACCOUNT_ID AND HARDX.LINE = 1 
+                              LEFT JOIN CLARITY_EDG EDG ON HARDX.DX_ID = EDG.DX_ID
+                            WHERE peh_PRIMDX.PAT_ENC_CSN_ID = PriorDischarge.PriorCSN
+              ) Prior_PrimaryDx   
+    where trunc(readmit_peh.HOSP_ADMSN_TIME) >= EPIC_UTIL.EFN_DIN('01-jun-2021') and trunc(readmit_peh.HOSP_ADMSN_TIME) <= (EPIC_UTIL.EFN_DIN('30-jun-2021')+1)
+          and readmit_peh.HOSP_DISCH_TIME IS NOT NULL
+          and trunc(readmit_peh.HOSP_ADMSN_TIME) > trunc(PriorDischarge.PriorDC)
+          and readmit_har.ACCT_CLASS_HA_C = '101'
+		  and readmit_peh.ADT_PATIENT_STAT_C <> 6  --exclude HOV
+            
