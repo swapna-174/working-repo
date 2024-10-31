@@ -1,1 +1,14 @@
-We cannot close on the house until June. My husband's contract ends in June, and he is required to work in the office until then. Additionally, I can't take the kids out of school before the end of the year, as NC will not grant credit unless they complete the EOG exam
+SELECT '@{pipeline().DataFactory}' as DataFactory_Name,
+'@{pipeline().Pipeline}' as Pipeline_Name,
+'@{pipeline().RunId}' as RunId,
+'TotalSaleTable' as Source,
+'TotalSale CSV File' as Destination,
+'@{activity('InsertDatatDataRithmTempTable').output.executionDetails[0].status}' as Execution_Status,
+'@{activity('InsertDatatDataRithmTempTable').output.errors[0].Code}' as ErrorCode,
+'@{replace(activity('InsertDatatDataRithmTempTable').output.errors[0].Message,'''','')}' as ErrorDescriprion,
+'@{utcnow()}' as ErrorLoggedTime
+
+
+
+
+
