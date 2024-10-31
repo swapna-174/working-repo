@@ -1,14 +1,1 @@
-SELECT '@{pipeline().DataFactory}' as DataFactory_Name,
-'@{pipeline().Pipeline}' as Pipeline_Name,
-'@{pipeline().RunId}' as RunId,
-'TotalSaleTable' as Source,
-'TotalSale CSV File' as Destination,
-'@{activity('InsertDatatDataRithmTempTable').output.executionDetails[0].status}' as Execution_Status,
-'@{activity('InsertDatatDataRithmTempTable').output.errors[0].Code}' as ErrorCode,
-'@{replace(activity('InsertDatatDataRithmTempTable').output.errors[0].Message,'''','')}' as ErrorDescriprion,
-'@{utcnow()}' as ErrorLoggedTime
-
-
-
-
-
+insert into  stage.PipelineRunStatus values ('@{pipeline().Pipeline}', '@{pipeline().RunId}','@{formatDateTime(pipeline().TriggerTime,'yyyy-MM-dd HH:mm:SS')}','@{pipeline().TriggerType}',datediff(second,'@{variables('starttime')},@{variables('EndTime')}'))
