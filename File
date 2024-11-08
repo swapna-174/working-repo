@@ -1,14 +1,3 @@
-SELECT '@{pipeline().DataFactory}' as DataFactory_Name,
-'@{pipeline().Pipeline}' as Pipeline_Name,
-'@{pipeline().RunId}' as RunId,
-'TotalSaleTable' as Source,
-'TotalSale CSV File' as Destination,
-'@{activity('InsertDatatDataRithmTempTable').output.executionDetails[0].status}' as Execution_Status,
-'@{activity('InsertDatatDataRithmTempTable').output.errors[0].Code}' as ErrorCode,
-'@{replace(activity('InsertDatatDataRithmTempTable').output.errors[0].Message,'''','')}' as ErrorDescriprion,
-'@{utcnow()}' as ErrorLoggedTime
-
-
-
-
-
+UPDATE SampleData
+SET TextColumn = REPLACE(TextColumn, SUBSTRING(TextColumn, PATINDEX('%[^ -~]%', TextColumn), 1), '')
+WHERE PATINDEX('%[^ -~]%', TextColumn) > 0;
