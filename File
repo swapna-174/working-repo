@@ -1,13 +1,14 @@
-Mike,
 
+It seems you want to share the content in an email format but have it cleaned up for clarity and professionalism. Here's a refined version of your message:
 
-I wanted to share the two stored procedures for the Care Coordination Extract that we use weekly. 
+Subject: Care Coordination Extract Updates
 
+Hi Mike,
 
- While I haven't started working on the quarterly reports yet, I have  forwarded the emails  that contain all of them when you can. Additionally, we have the stored procedure approved by Epic; however, we are still trying to resolve issues with retrieving data for the "Note" attribute, which is currently blank for all encounters, as well as the note type for encounters. I have the SQL query suggested by Mark, but it’s still not functioning as expected.Mike,
+I wanted to share the two stored procedures for the Care Coordination Extract that we use weekly.
 
+While I haven't started working on the quarterly reports yet, I have forwarded the emails that contain all the necessary information for your reference.
 
-I wanted to share the two stored procedures for the Care Coordination Extract that we use weekly. 
+Additionally, the stored procedure has been approved by Epic; however, we're still encountering issues with retrieving data for the "Note" attribute, which remains blank for all encounters, as well as for the note type associated with those encounters.
 
-
- While I haven't started working on the quarterly reports yet, I have  forwarded the emails  that contain all of them when you can. Additionally, we have the stored procedure approved by Epic; however, we are still trying to resolve issues with retrieving data for the "Note" attribute, which is currently blank for all encounters, as well as the note type for encounters. I have the SQL query suggested by Mark, but it’s still not functioning as expected.
+I also have the SQL query suggested by Mark, but it isn’t functioning as expected. Let me know if you’d like to review it together or discuss any potential solutions.
