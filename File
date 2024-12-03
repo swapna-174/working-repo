@@ -1,14 +1,6 @@
-
-It seems you want to share the content in an email format but have it cleaned up for clarity and professionalism. Here's a refined version of your message:
-
-Subject: Care Coordination Extract Updates
-
-Hi Mike,
-
-I wanted to share the two stored procedures for the Care Coordination Extract that we use weekly.
-
-While I haven't started working on the quarterly reports yet, I have forwarded the emails that contain all the necessary information for your reference.
-
-Additionally, the stored procedure has been approved by Epic; however, we're still encountering issues with retrieving data for the "Note" attribute, which remains blank for all encounters, as well as for the note type associated with those encounters.
-
-I also have the SQL query suggested by Mark, but it isn’t functioning as expected. Let me know if you’d like to review it together or discuss any potential solutions.
+"\\\\epic-nas.et1342.epichosted.com\\cogitoexternal\\CustomExtracts\\PRD\\MoveIT\\Premier\\TN0186_chgcode_" 
++ 
+RIGHT("0" +(DT_STR,4,1252)DATEPART( "mm" , getdate() ), 2) +
+RIGHT("0" + (DT_STR,4,1252)DATEPART( "dd" , getdate() ), 2) +
+RIGHT("0" + (DT_STR,4,1252)DATEPART( "yyyy" , getdate() ), 4)  +
+".txt"
