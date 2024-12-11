@@ -1,5 +1,12 @@
-CREATE LOGIN [CAREMORE\svc_CA47TWVSQL] FROM WINDOWS WITH DEFAULT_DATABASE=[SSISDB], DEFAULT_LANGUAGE=[us_english]
+USE [msdb]
 GO
 
-ALTER SERVER ROLE [sysadmin] ADD MEMBER [CAREMORE\svc_CA47TWVSQL]
+/****** Object:  ProxyAccount [svc_birptsol]    Script Date: 12/11/2024 1:47:40 PM ******/
+EXEC msdb.dbo.sp_add_proxy @proxy_name=N'svc_birptsol',@credential_name=N'svc_birptsol', 
+		@enabled=1
 GO
+
+EXEC msdb.dbo.sp_grant_proxy_to_subsystem @proxy_name=N'svc_birptsol', @subsystem_id=11
+GO
+
+
