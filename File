@@ -1,190 +1,246 @@
-SELECT ORDER_METRICS.ORDER_ID NUMERICBASEID,
-       ORDER_METRICS.PAT_ID PATIENTID,
-       ORDER_METRICS.PAT_ENC_CSN_ID ENCOUNTERID,
-       ORDER_METRICS.PAT_LOC_ID DEPARTMENTID,
-       ORDER_PROC.PROC_ID PROCEDUREID,
-       ORDER_METRICS.ORDERING_USER_ID ORDEREDBYEMPLOYEEID,
-       ORDER_METRICS.ORDERING_PROV_ID ORDEREDBYPROVIDERID,
-       ORDER_METRICS.AUTH_PROV_ID AUTHORIZEDBYPROVIDERID,
-       CAST( COALESCE( ORDER_PROC_5.LAST_RSLT_LAB_ID,ORDER_PROC.RESULT_LAB_ID ) AS NUMERIC (18,0) ) RESULTLABID,
-       ORDER_METRICS.ORIG_ORD_PROV_ID ORIGINALORDERPROVIDERID,
-       ORDER_METRICS.ORIG_AUTH_PROV_ID ORIGINALAUTHORIZINGPROVIDERID,
-       ORDER_METRICS.ORDER_DTTM ORDEREDINSTANT,
-       ORDER_METRICS.ORDER_MODE VERBALORDERMODE,
-       CASE
-         WHEN ORDER_METRICS.ORDER_TYPE_C IS NULL THEN '*Unspecified'
-         WHEN ZC_ORDER_TYPE.ORDER_TYPE_C IS NULL THEN '*Unknown'
-         ELSE ZC_ORDER_TYPE.NAME
-       END TYPE,
-       CASE
-         WHEN ORDER_PROC.ORDER_CLASS_C IS NULL THEN '*Unspecified'
-         WHEN ZC_ORDER_CLASS.ORDER_CLASS_C IS NULL THEN '*Unknown'
-         ELSE ZC_ORDER_CLASS.NAME
-       END CLASS,
-       CASE
-         WHEN ORDER_PROC_3.ORDER_ID IS NULL THEN '*Unknown'
-         WHEN ORDER_PROC_3.ORDERING_MODE_C IS NULL THEN '*Unspecified'
-         WHEN ZC_ORDERING_MODE.ORDERING_MODE_C IS NULL THEN '*Unknown'
-         ELSE ZC_ORDERING_MODE.NAME
-       END "MODE",
-       CASE
-         WHEN ORDER_METRICS.ORDER_SOURCE_C IS NULL THEN '*Unspecified'
-         WHEN ZC_ORDER_SOURCE.ORDER_SOURCE_C IS NULL THEN '*Unknown'
-         ELSE ZC_ORDER_SOURCE.NAME
-       END SOURCE,
-       CASE
-         WHEN ORDER_METRICS.ORDER_STATUS_C IS NULL THEN '*Unspecified'
-         WHEN ZC_ORDER_STATUS.ORDER_STATUS_C IS NULL THEN '*Unknown'
-         ELSE ZC_ORDER_STATUS.NAME
-       END STATUS,
-       CASE
-         WHEN ORDER_PROC.FUTURE_OR_STAND = 'S' THEN 'Standing'
-         WHEN ORDER_PROC.FUTURE_OR_STAND = 'F' THEN 'Future'
-         ELSE 'Normal'
-       END STANDINGSTATUS,
-       CAST( CASE
-               WHEN ORDER_METRICS.CPOE_YN = 'Y' THEN 1
-               WHEN ORDER_METRICS.CPOE_YN = 'N' THEN 0
-               ELSE NULL
-             END AS INT ) CPOE,
-       CASE
-         WHEN ORDER_PROC.ORDER_PRIORITY_C IS NULL THEN '*Unspecified'
-         WHEN ZC_ORDER_PRIORITY.ORDER_PRIORITY_C IS NULL THEN '*Unknown'
-         ELSE ZC_ORDER_PRIORITY.NAME
-       END ORDERPRIORITY,
-       CASE
-         WHEN CL_PRL_SS.RECORD_STATUS_2_C IS NULL THEN ORDER_SMARTSET.SS_PRL_ID
-       END SETSOURCEID,
-       CASE
-         WHEN CL_PRL_SS.PRL_RECORD_TYPE_C = 5
-              AND CL_PRL_SS.RECORD_STATUS_2_C IS NULL THEN CL_PRL_SS.PROTOCOL_ID
-       END ORDERSETID,
-       CASE
-         WHEN CL_OSQ.RECORD_STATUS_C IS NULL
-              AND CL_OSQ.REC_TYPE_C = 6 THEN ORDER_SMARTSET.SS_SG_KEY
-       END SMARTGROUPID,
-       CASE
-         WHEN CL_OTL.RECORD_STATUS_C IS NOT NULL THEN NULL
-         WHEN CL_OTL.PROC_ID IS NULL THEN NULL
-         ELSE ORD_PRFLST_TRK.ORDER_TMPLTE_OTL_I
-       END TEMPLATEID,
-       CASE
-         WHEN ORD_PRFLST_TRK.ORD_TEMPLATE_CNTX LIKE '%SMARTSET USER%'
-              OR ORD_PRFLST_TRK.ORD_TEMPLATE_CNTX LIKE '%UOS%' THEN 1
-         ELSE 0
-       END ISUSERORDERSET,
-       CASE
-         WHEN ORDER_SMARTSET.SS_PRL_ID IS NOT NULL THEN ORDER_METRICS.ORIGINAL_SESSIONKEY
-       END ORIGINALSESSION,
-       CASE
-         WHEN CL_OTL.RECORD_STATUS_C IS NOT NULL THEN NULL
-         WHEN CL_OTL.PROC_ID IS NULL THEN NULL
-         WHEN CL_OTL_REC_LINEAGE.RECORD_LINEAGE_ID IS NOT NULL THEN CL_OTL_REC_LINEAGE.RECORD_LINEAGE_ID
-         ELSE ORD_PRFLST_TRK.ORDER_TMPLTE_OTL_I
-       END ORIGINALTEMPLATEID,
-       CASE
-         WHEN ORDER_SMARTSET.ORDER_ID IS NULL THEN NULL
-         WHEN ORDER_SMARTSET.SS_PRL_ID IS NULL THEN '*Unspecified'
-         WHEN CL_PRL_SS.PROTOCOL_ID IS NULL
-              AND CL_PRL_SS_OT.PROTOCOL_ID IS NULL THEN '*Unknown'
-         WHEN CL_PRL_SS.RECORD_STATUS_2_C IS NOT NULL THEN NULL
-         WHEN NULLIF( CL_PRL_SS_OT.DISPLAY_NAME,'' ) IS NOT NULL THEN CL_PRL_SS_OT.DISPLAY_NAME
-         ELSE CL_PRL_SS.PROTOCOL_NAME
-       END SETSOURCE,
-       CAST( CASE
-               WHEN VerbalCosigned.VERBAL = 1 THEN 1
-               ELSE 0
-             END AS INT ) VERBAL,
-       CAST( CASE
-               WHEN VerbalCosigned.REQUIRESCOSIGN = 1 THEN 1
-               ELSE 0
-             END AS INT ) REQUIRESCOSIGN,
-       CAST( CASE
-               WHEN VerbalCosigned.REQUIRESCOSIGN = 0
-                    OR VerbalCosigned.REQUIRESCOSIGN IS NULL
-                    OR VerbalCosigned.HASSTANDARD = 0 THEN NULL
-               WHEN VerbalCosigned.COSIGNED = 1 THEN 1
-               ELSE 0
-             END AS INT ) COSIGNED,
-       CAST( CASE
-               WHEN VerbalCosigned.HASVERBAL = 0 THEN NULL
-               WHEN VerbalCosigned.VERBALSIGNED IS NULL THEN NULL
-               WHEN VerbalCosigned.VERBALSIGNED = 1 THEN 1
-               ELSE 0
-             END AS INT ) VERBALSIGNED,
-       CAST( CASE
-               WHEN VerbalCosigned.PROTOCOL = 1 THEN 1
-               ELSE 0
-             END AS INT ) PROTOCOL,
-       CAST( CASE
-               WHEN ORDER_PROC_5.ACTV_EXCLUDE_FROM_CDS_REASON_C = 1 THEN 1
-               ELSE 0
-             END AS INT ) ISUNSUCCESSFULATTEMPT,
-       CAST( CASE
-               WHEN ORDER_PROC_5.REC_FROM_OUTSIDE_C IS NOT NULL THEN 1
-               ELSE 0
-             END AS INT ) ISFROMOUTSIDESOURCE,
-       FirstFollowUpEnc.PAT_ENC_CSN_ID FollowUpEncCsn,
-       FirstFollowUpEnc.CONTACT_DATE FollowUpEncDate,
-       ORDER_METRICS.DISCON_LOC_DTTM DiscontinuedDate,
-       ORDER_METRICS.SPECIMEN_RECV_DATE,
-       ORDER_METRICS.FIRST_FINAL_LOC_DTTM,
-       SmartGroupInfo.REGIMEN_ID PathwayInstanceSmartGroupId,
-       ORDER_PROC_3.STAT_COMP_DTTM CompletedDate_X,
-       ORDER_PROC.DESCRIPTION ClinicalOrderDesc_X,
-       ORDER_PROC.PROC_START_TIME EffectiveDate_X
-FROM   ORDER_METRICS
-       INNER JOIN ORDER_PROC ON ORDER_METRICS.ORDER_ID = ORDER_PROC.ORDER_PROC_ID
-       LEFT OUTER JOIN ORDER_PROC_3 ON ORDER_METRICS.ORDER_ID = ORDER_PROC_3.ORDER_ID
-       LEFT OUTER JOIN ORDER_PROC_5 ON ORDER_METRICS.ORDER_ID = ORDER_PROC_5.ORDER_ID
-       LEFT OUTER JOIN ORDER_SMARTSET ON ORDER_PROC.ORDER_PROC_ID = ORDER_SMARTSET.ORDER_ID
-       LEFT OUTER JOIN CL_PRL_SS ON ORDER_SMARTSET.SS_PRL_ID = CL_PRL_SS.PROTOCOL_ID
-       LEFT OUTER JOIN CL_PRL_SS_OT ON ORDER_SMARTSET.SS_PRL_ID = CL_PRL_SS_OT.PROTOCOL_ID
-                                       AND CAST( ORDER_SMARTSET.SS_DAT AS NUMERIC (18,2) ) = CAST( CL_PRL_SS_OT.PRL_DAT AS NUMERIC (18,2) )
-       LEFT OUTER JOIN CL_OSQ ON TRY_CAST( ORDER_SMARTSET.SS_SG_KEY AS NUMERIC (18,0) ) = CL_OSQ.ORDERSET_ID
-       LEFT OUTER JOIN ORD_PRFLST_TRK ON ORDER_METRICS.ORDER_ID = ORD_PRFLST_TRK.ORDER_ID
-       LEFT OUTER JOIN CL_OTL ON ORD_PRFLST_TRK.ORDER_TMPLTE_OTL_I = CL_OTL.OTL_ID
-       LEFT OUTER JOIN CL_OTL_REC_LINEAGE ON ORD_PRFLST_TRK.ORDER_TMPLTE_OTL_I = CL_OTL_REC_LINEAGE.OTL_ID
-                                             AND CL_OTL_REC_LINEAGE.LINE = 1
-       LEFT OUTER JOIN ( SELECT   ORDER_PROC_ID,
-                                  0 VERBAL,
-                                  0 PROTOCOL,
-                                  MAX( CASE WHEN CSGN_RQRD_C = 1 THEN 1 ELSE 0 END ) REQUIRESCOSIGN,
-                                  COSIGNED = CASE MAX( CASE WHEN CSGN_RQRD_C = 1 AND VERBAL_MODE_C IS NULL  THEN CASE WHEN CSGN_SIGNED_TIME IS NOT NULL  THEN 1 ELSE 2 END  ELSE 0 END )
-                                               WHEN 0 THEN NULL
-                                               WHEN 1 THEN 1
-                                               ELSE 0
-                                             END,
-                                  VERBALSIGNED = CASE MAX( CASE WHEN CSGN_RQRD_C = 1 AND VERBAL_MODE_C IS NOT NULL  THEN CASE WHEN VERB_SIGNED_TIME IS NOT NULL  THEN 1 ELSE 2 END  ELSE 0 END )
-                                                   WHEN 0 THEN NULL
-                                                   WHEN 1 THEN 1
-                                                   ELSE 0
-                                                 END,
-                                  MAX( CASE WHEN VERBAL_MODE_C IS NULL  THEN 1 ELSE 0 END ) HASSTANDARD,
-                                  MAX( CASE WHEN VERBAL_MODE_C IS NOT NULL  THEN 1 ELSE 0 END ) HASVERBAL
-                         FROM     ORDER_SIGNED_PROC
-                         WHERE    ORDER_PROC_ID > <<LowerBound>>
-                                  AND ORDER_PROC_ID <= <<UpperBound>>
-                         GROUP BY ORDER_PROC_ID ) VerbalCosigned ON ORDER_PROC.ORDER_PROC_ID = VerbalCosigned.ORDER_PROC_ID
-       LEFT OUTER JOIN ( SELECT   RESULT_FOLLOW_UP.RESULT_ID,
-                                  MIN( RESULT_FOLLOW_UP.PAT_ENC_DATE_REAL ) ResultFollowUpDateReal
-                         FROM     RESULT_FOLLOW_UP
-                         GROUP BY RESULT_FOLLOW_UP.RESULT_ID ) FirstFollowUpEncDateReal ON FirstFollowUpEncDateReal.RESULT_ID = ORDER_METRICS.ORDER_ID
-       LEFT OUTER JOIN RESULT_FOLLOW_UP FirstFollowUpEnc ON FirstFollowUpEnc.RESULT_ID = FirstFollowUpEncDateReal.RESULT_ID
-                                                            AND FirstFollowUpEnc.PAT_ENC_DATE_REAL = FirstFollowUpEncDateReal.ResultFollowUpDateReal
-       LEFT OUTER JOIN ( SELECT TRG_BLOCK_INFO.REGIMEN_ID,
-                                TRG_BLOCK_INFO.BLOCK_ID
-                         FROM   TRG_BLOCK_INFO
-                                INNER JOIN TRG_INFO ON TRG_BLOCK_INFO.REGIMEN_ID = TRG_INFO.REGIMEN_ID
-                         WHERE  TRG_INFO.REC_TYPE_C = 6
-                                AND TRG_BLOCK_INFO.BLOCK_INI = 'ORD' ) SmartGroupInfo ON SmartGroupInfo.BLOCK_ID = ORDER_PROC.ORDER_PROC_ID
-       LEFT OUTER JOIN ZC_ORDER_TYPE ON ORDER_METRICS.ORDER_TYPE_C = ZC_ORDER_TYPE.ORDER_TYPE_C
-       LEFT OUTER JOIN ZC_ORDER_CLASS ON ORDER_PROC.ORDER_CLASS_C = ZC_ORDER_CLASS.ORDER_CLASS_C
-       LEFT OUTER JOIN ZC_ORDERING_MODE ON ORDER_PROC_3.ORDERING_MODE_C = ZC_ORDERING_MODE.ORDERING_MODE_C
-       LEFT OUTER JOIN ZC_ORDER_SOURCE ON ORDER_METRICS.ORDER_SOURCE_C = ZC_ORDER_SOURCE.ORDER_SOURCE_C
-       LEFT OUTER JOIN ZC_ORDER_STATUS ON ORDER_METRICS.ORDER_STATUS_C = ZC_ORDER_STATUS.ORDER_STATUS_C
-       LEFT OUTER JOIN ZC_ORDER_PRIORITY ON ORDER_PROC.ORDER_PRIORITY_C = ZC_ORDER_PRIORITY.ORDER_PRIORITY_C
-WHERE  ( ORDER_PROC_5.ACTV_EXCLUDE_FROM_CDS_REASON_C = 1
-         OR ORDER_PROC_5.ACTV_EXCLUDE_FROM_CDS_REASON_C IS NULL )
-       AND ORDER_METRICS.ORDER_ID > <<LowerBound>>
-       AND ORDER_METRICS.ORDER_ID <= <<UpperBound>>
+/*
+GET THE EARLIEST INITIATION DATE/TIME TO BE USED LATER TO ONLY PULL DEVICE DATE 24 HOURS PRIOR TO AND 7 DAYS POST INITIATION DATE/TIME
+*/
+WITH INITDT AS (	
+
+	SELECT * FROM (
+		SELECT  
+			HSP_ENC.PAT_ID
+			, PAT.PAT_NAME
+			, HSP_ENC.HSP_ACCOUNT_ID
+			, HSP_ENC.PAT_ENC_CSN_ID
+			, HSP_ENC.INPATIENT_DATA_ID
+			, FLO_REC.RECORD_DATE AS "MEASURE_DATE" 
+			, FLO_MEAS.RECORDED_TIME AS "MEASURE_TIME" 
+			, ROW_NUMBER() OVER (PARTITION BY hsp_enc.PAT_ENC_CSN_ID ORDER BY FLO_MEAS.RECORDED_TIME) ROWNUM
+		FROM PAT_ENC_HSP HSP_ENC 
+
+		------------------------------------------------------------------------------------------------------------------------ 
+		JOIN IP_FLWSHT_REC FLO_REC 
+			ON FLO_REC.INPATIENT_DATA_ID = HSP_ENC.INPATIENT_DATA_ID
+		------------------------------------------------------------------------------------------------------------------------ 
+		JOIN IP_FLWSHT_MEAS FLO_MEAS 
+			ON FLO_MEAS.FSD_ID = FLO_REC.FSD_ID
+		------------------------------------------------------------------------------------------------------------------------
+		JOIN IP_FLO_GP_DATA FLO 
+			ON FLO.FLO_MEAS_ID = FLO_MEAS.FLO_MEAS_ID
+		------------------------------------------------------------------------------------------------------------------------
+		LEFT JOIN IP_FLT_DATA FLT 
+			ON FLT.TEMPLATE_ID = FLO_MEAS.FLT_ID 
+		------------------------------------------------------------------------------------------------------------------------
+		JOIN PATIENT	PAT
+			ON PAT.PAT_ID = HSP_ENC.PAT_ID
+
+
+		WHERE HSP_ENC.HSP_ACCOUNT_ID =	'101968345'		-- '101968345'	-- '102219800'
+		--WHERE HSP_ENC.PAT_ENC_CSN_ID =	'300440838'		-- '300440838'	-- '301236168'
+		AND	FLT.TEMPLATE_ID IN ('3044831000','30444831001')
+		AND FLO.FLO_MEAS_ID = '3044400042' -- Initiation Time
+		) A 
+		WHERE ROWNUM = 1
+)	
+
+/*
+CHECK THE DATE WHERE THE PATIENT CAME OFF ECMO.  IF IT WAS GREATER THAN 7 DAYS POST INITIATION, USE THE 7 DAYS POST INITIATION.
+IF THE PATIENT CAME OFF INSIDE OF 7 DAYS POST INITIATION, USE THE DATE WHEN THEY CAME OFF ECMO AS THE DATE RANGE
+*/
+, ENDDT AS (	
+
+	SELECT * FROM (
+		SELECT  
+			INITDT.pat_id
+			, INITDT.PAT_ENC_CSN_ID
+			--, hsp_enc.INPATIENT_DATA_ID
+			, FLO_REC.RECORD_DATE AS "MEASURE_DATE" 
+			, FLO_MEAS.RECORDED_TIME AS "MEASURE_TIME" 
+			, CASE	WHEN FLO_MEAS.RECORDED_TIME IS NULL THEN INITDT.MEASURE_TIME + 7
+					WHEN FLO_MEAS.RECORDED_TIME < INITDT.MEASURE_TIME + 7 THEN FLO_MEAS.RECORDED_TIME
+					ELSE INITDT.MEASURE_TIME + 7
+			  END AS [END_DT]
+
+			, ROW_NUMBER() OVER (PARTITION BY INITDT.PAT_ENC_CSN_ID ORDER BY FLO_MEAS.RECORDED_TIME) ROWNUM
+		FROM INITDT
+
+		------------------------------------------------------------------------------------------------------------------------ 
+		JOIN IP_FLWSHT_REC FLO_REC 
+			ON FLO_REC.INPATIENT_DATA_ID = INITDT.INPATIENT_DATA_ID
+		------------------------------------------------------------------------------------------------------------------------ 
+		JOIN IP_FLWSHT_MEAS FLO_MEAS 
+			ON FLO_MEAS.FSD_ID = FLO_REC.FSD_ID
+		------------------------------------------------------------------------------------------------------------------------
+		JOIN IP_FLO_GP_DATA FLO 
+			ON FLO.FLO_MEAS_ID = FLO_MEAS.FLO_MEAS_ID
+		------------------------------------------------------------------------------------------------------------------------
+		LEFT OUTER JOIN IP_FLT_DATA FLT 
+			ON FLT.TEMPLATE_ID = FLO_MEAS.FLT_ID 
+		------------------------------------------------------------------------------------------------------------------------
+
+
+		WHERE FLT.TEMPLATE_ID IN ('3044831000','30444831001')
+		AND FLO.FLO_MEAS_ID = '3044830116'  -- Final cross-clamp time
+		) A 
+		WHERE ROWNUM = 1
+)	
+
+/*
+BASED ON THE INITIATION DATE AND END DATE, PULL THE PREVIOUS DAYS WORTH OF ECMO FLOWSHEET DATA UP TO THE END DATE	--7 DAYS POST INITIATION DATE
+*/
+, ECMO AS (
+
+SELECT  
+	INITDT.PAT_ID
+	, INITDT.PAT_ENC_CSN_ID
+    ,'Flowsheet' [VALUE_TYPE] 
+	, FLO.FLO_MEAS_ID [RECORD_ID]
+	, COALESCE(FLO.DISP_NAME, FLO.FLO_MEAS_NAME) [RECORD_NAME]
+	, FLO_MEAS.RECORDED_TIME [MEASURE_TIME]
+	, FLO_MEAS.MEAS_VALUE [MEASURE_VALUE]
+	, FLO.UNITS [MEASURE_UNIT]
+    , COALESCE(FLT.DISPLAY_NAME, FLT.TEMPLATE_NAME) [FLWSHT_TEMPLATE]
+	, '1' [ID]
+		
+FROM INITDT
+
+------------------------------------------------------------------------------------------------------------------------ 
+JOIN PAT_ENC_HSP HSP_ENC 
+	ON HSP_ENC.PAT_ENC_CSN_ID = INITDT.PAT_ENC_CSN_ID
+-------------------------------------------------------------------------------------------------------------------------- 
+JOIN IP_FLWSHT_REC FLO_REC 
+	ON FLO_REC.INPATIENT_DATA_ID = HSP_ENC.INPATIENT_DATA_ID
+-------------------------------------------------------------------------------------------------------------------------- 
+JOIN IP_FLWSHT_MEAS FLO_MEAS 
+	ON FLO_MEAS.FSD_ID = FLO_REC.FSD_ID
+--------------------------------------------------------------------------------------------------------------------------
+JOIN IP_FLO_GP_DATA FLO 
+	ON FLO.FLO_MEAS_ID = FLO_MEAS.FLO_MEAS_ID
+--------------------------------------------------------------------------------------------------------------------------
+LEFT JOIN IP_FLT_DATA FLT 
+	ON FLT.TEMPLATE_ID = FLO_MEAS.FLT_ID 
+--------------------------------------------------------------------------------------------------------------------------
+JOIN ENDDT	
+	ON ENDDT.PAT_ENC_CSN_ID = INITDT.PAT_ENC_CSN_ID
+
+WHERE FLO_MEAS.RECORDED_TIME >= INITDT.MEASURE_TIME - 1	 --'10/05/2024'
+AND FLO_MEAS.RECORDED_TIME <= ENDDT.END_DT	-- INITDT.MEASURE_TIME + 7
+AND FLO_MEAS.FLO_MEAS_ID IN (
+	'3040999459'	--1. Pump flow R ECMO PUMP ROTATION SPEED SETTING []
+	,'3040101000'	--2. Pump revolutions R ECMO  PUMP SPEED (ROTATIONS/MIN) [] 
+	,'1120100574'	--3. Pump venous pressure R ECMO VENOUS PRESSURE [] 
+	,'3044830028'	--4. Sweep gas flow R MLH ECMO SWEEP (L/MIN) [] 
+	,'3044830029'	--5. Circuit oxygen R MLH ECMO SWEEP FIO2 [] 
+	,'3044830138'	--6. Circuit change: Date and time taken for the circuit change R MLH ECMO PROCEDURES [] one of the answers in this row is “Changed circuit”
+
+)
+
+
+)
+
+, PHYS AS (
+/*
+BASED ON THE INITIATION DATE, PULL THE PREVIOUS DAYS WORTH OF DEVICE DATA UP TO 7 DAYS POST INITIATION DATE
+*/
+SELECT  
+	INITDT.PAT_ID
+	, INITDT.PAT_ENC_CSN_ID
+    ,'Device' [VALUE_TYPE] 
+	, DAT.FLO_MEAS_ID [RECORD_ID]
+	, COALESCE(FLO.DISP_NAME, FLO.FLO_MEAS_NAME) [RECORD_NAME]
+	, DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), DAT.DEV_DATA_DTTM_UTC) [MEASURE TIME] -- CONVERT UTC TO LOCAL TIME
+	, DAT.DEV_DATA_VALUE [MEASURE_VALUE]
+	, FLO.UNITS [MEASURE_UNIT]
+	,	CASE
+			WHEN DAT.FLO_MEAS_ID IN ('3040102607','316090','3046000152','301590','301600','316050','301620','301650','301550','301630') THEN 'VENT'
+			WHEN DAT.FLO_MEAS_ID IN ('8','9','5','301360','301260','301250','301370','10','7075527','1120000349','1120000348') THEN 'PHYSIOLOGY'
+			ELSE ' '
+		END [FLWSHT_TEMPLATE]
+	, '1' [ID]
+
+		
+FROM INITDT
+
+------------------------------------------------------------------------------------------------------------------------ 
+JOIN IP_DEVICE_DATA DAT
+	ON DAT.PAT_ENC_CSN_ID = INITDT.PAT_ENC_CSN_ID
+------------------------------------------------------------------------------------------------------------------------ 
+JOIN IP_FLO_GP_DATA FLO 
+	ON FLO.FLO_MEAS_ID = DAT.FLO_MEAS_ID
+------------------------------------------------------------------------------------------------------------------------
+JOIN ENDDT	
+	ON ENDDT.PAT_ENC_CSN_ID = INITDT.PAT_ENC_CSN_ID
+
+WHERE DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), DAT.DEV_DATA_DTTM_UTC)  > INITDT.MEASURE_TIME - 1	 --'10/05/2024'
+AND DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), DAT.DEV_DATA_DTTM_UTC) < ENDDT.END_DT	-- INITDT.MEASURE_TIME + 7
+
+--WHERE DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), DAT.DEV_DATA_DTTM_UTC)  > INITDT.MEASURE_TIME - 1
+--AND DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), DAT.DEV_DATA_DTTM_UTC) < INITDT.MEASURE_TIME + 7
+
+AND DAT.FLO_MEAS_ID IN (
+--PHYSIOLOGY DATA
+'8','9','5','301360','301260','301250','301370','10','7075527','1120000349','1120000348'
+)
+
+)
+
+
+, VENT AS (
+
+/*
+BASED ON THE INITIATION DATE, PULL THE PREVIOUS DAYS WORTH OF VENT FLOWSHEET DATA UP TO 7 DAYS POST INITIATION DATE
+*/
+SELECT  
+	INITDT.PAT_ID
+	, INITDT.PAT_ENC_CSN_ID
+    ,'Flowsheet' [VALUE_TYPE] 
+	, FLO.FLO_MEAS_ID [RECORD_ID]
+	, COALESCE(FLO.DISP_NAME, FLO.FLO_MEAS_NAME) [RECORD_NAME]
+	, FLO_MEAS.RECORDED_TIME [MEASURE_TIME]
+	, FLO_MEAS.MEAS_VALUE [MEASURE_VALUE]
+	, FLO.UNITS [MEASURE_UNIT]
+    , COALESCE(FLT.DISPLAY_NAME, FLT.TEMPLATE_NAME) [FLWSHT_TEMPLATE]
+	, '1' [ID]
+		
+FROM INITDT
+
+------------------------------------------------------------------------------------------------------------------------ 
+JOIN PAT_ENC_HSP HSP_ENC 
+	ON HSP_ENC.PAT_ENC_CSN_ID = INITDT.PAT_ENC_CSN_ID
+-------------------------------------------------------------------------------------------------------------------------- 
+JOIN IP_FLWSHT_REC FLO_REC 
+	ON FLO_REC.INPATIENT_DATA_ID = HSP_ENC.INPATIENT_DATA_ID
+-------------------------------------------------------------------------------------------------------------------------- 
+JOIN IP_FLWSHT_MEAS FLO_MEAS 
+	ON FLO_MEAS.FSD_ID = FLO_REC.FSD_ID
+----------------------------------------------------------------------------------------------------------------------------
+JOIN IP_FLO_GP_DATA FLO 
+	ON FLO.FLO_MEAS_ID = FLO_MEAS.FLO_MEAS_ID
+----------------------------------------------------------------------------------------------------------------------------
+JOIN IP_FLT_DATA FLT 
+	ON FLT.TEMPLATE_ID = FLO_MEAS.FLT_ID 
+--------------------------------------------------------------------------------------------------------------------------
+JOIN ENDDT	
+	ON ENDDT.PAT_ENC_CSN_ID = INITDT.PAT_ENC_CSN_ID
+
+WHERE FLO_MEAS.RECORDED_TIME >= INITDT.MEASURE_TIME - 1	 --'10/05/2024'
+AND FLO_MEAS.RECORDED_TIME <= ENDDT.END_DT	-- INITDT.MEASURE_TIME + 7
+
+--WHERE FLO_MEAS.RECORDED_TIME >= INITDT.MEASURE_TIME - 1	 --'10/05/2024'
+--AND FLO_MEAS.RECORDED_TIME <= INITDT.MEASURE_TIME + 7
+AND FLO_MEAS.FLO_MEAS_ID IN (
+--VENT DATA
+'3040102607','316090','3046000152','301590','301600','316050','301620','301650','301550','301630'
+)
+
+)
+
+
+SELECT * FROM ECMO
+
+UNION ALL
+
+	SELECT * FROM VENT
+
+UNION ALL
+
+	SELECT * FROM PHYS
+
+ORDER BY MEASURE_TIME, RECORD_NAME
