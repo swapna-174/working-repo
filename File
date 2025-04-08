@@ -1,277 +1,33 @@
-/************************************************* 
-** Author: Swapna Boga
-** Name: PatientAllVitalLabResults_x
-** Description:  PatientAllVitalLabResults_x is a data mart table that stores information related to general patient Vitals  and Lab Latest Test  results  . This table consolidates patient information from many subject areas including lab values, encounters, vitals, medications, 
-** diagnoses, social history, and risk scores.
-** Parameters:  NONE
-** Test Run:  In Snowflake  PROD -Stage-RDSC
-** Revisions: 
-*************************************************/
+WITH prevStatuses AS (
+  SELECT RESEARCH_ID,
+         LINE,
+         LAG(HX_BILLING_STATUS_C) OVER (PARTITION BY RESEARCH_ID ORDER BY LINE ASC) PREV_BILLING_STATUS_C
+  FROM RSH_HISTORY 
+  WHERE RSH_HISTORY.RESEARCH_ID > '<<LowerBound>>'
+    AND RSH_HISTORY.RESEARCH_ID <= '<<UpperBound>>' 
+),
 
-create or replace table stage.rdsc.PatientAllVitalLabResults_x  AS
+statusChanges AS (
+  SELECT RSH_HISTORY.RESEARCH_ID,
+         RSH_HISTORY.LINE,
+         RSH_HISTORY.HX_BILLING_STATUS_C,
+         CAST( RSH_HISTORY.HX_MOD_LOCAL_DTTM AS DATE ) STATUS_START_DATE
+    FROM RSH_HISTORY
+      INNER JOIN prevStatuses
+        ON RSH_HISTORY.RESEARCH_ID = prevStatuses.RESEARCH_ID
+          AND RSH_HISTORY.LINE = prevStatuses.LINE
+  WHERE prevStatuses.PREV_BILLING_STATUS_C <> RSH_HISTORY.HX_BILLING_STATUS_C
+    OR (prevStatuses.PREV_BILLING_STATUS_C IS NULL AND RSH_HISTORY.HX_BILLING_STATUS_C IS NOT NULL)
+    OR (prevStatuses.PREV_BILLING_STATUS_C IS NOT NULL AND RSH_HISTORY.HX_BILLING_STATUS_C IS NULL)
+)
 
-WITH Bmi AS (SELECT DISTINCT patientdurablekey,takeninstant ,unit,value FROM ( select 
-        flowsheetvaluefact.patientdurablekey, 
-        flowsheetvaluefact.numericvalue value , 
-        'kg/m2' AS unit , 
-        flowsheetrowdim.name , 
-         flowsheetvaluefact.takeninstant  takeninstant,
-        row_number() over (partition by flowsheetvaluefact.patientdurablekey order by flowsheetvaluefact.takeninstant desc) as latestrow
-from caboodle.flowsheetvaluefact   join caboodle.encounterfact on flowsheetvaluefact.encounterkey=encounterfact.encounterkey
-left join caboodle.flowsheetrowdim  on flowsheetvaluefact.flowsheetrowkey = flowsheetrowdim.flowsheetrowkey 
-    where 
-    /*FLO Data elements and ITem number-BMI used in AH */
- 	flowsheetrowdim.name in( 'R BMI' ,'R AH OP BMI','R BAR BMI (CALCULATED)','AH AMB BMI - NEW DATA CONVERSION','R AH OP BMI','R BMI','R BAR BMI (CALCULATED)')---[210301070],7028'
-    and flowsheetvaluefact.numericvalue is not null  AND flowsheetvaluefact.takeninstant IS NOT NULL AND flowsheetvaluefact.encounterkey>1 and encounterfact.type<>'Historical encounter'
-        ) WHERE latestrow=1 
-        )
-   
-        
-        
-        
- /* height in Sq Meters*/      
-,Height AS (SELECT DISTINCT patientdurablekey,takeninstant ,unit,value    FROM ( select 
-        flowsheetvaluefact.patientdurablekey, 
-        CASE WHEN unit ='inches' THEN flowsheetvaluefact.NumericValue*0.0254 ELSE flowsheetvaluefact.NumericValue END  value, 
-        CASE WHEN unit ='inches' THEN 'sq meters'  ELSE flowsheetrowdim.unit END unit, 
-        flowsheetrowdim.name , 
-       flowsheetvaluefact.takeninstant takeninstant,
-        row_number() over (partition by flowsheetvaluefact.patientdurablekey order by flowsheetvaluefact.takeninstant desc) as latestrow
-from caboodle.flowsheetvaluefact    join caboodle.encounterfact on flowsheetvaluefact.encounterkey=encounterfact.encounterkey
-left join caboodle.flowsheetrowdim   
-on flowsheetvaluefact.flowsheetrowkey = flowsheetrowdim.flowsheetrowkey 
-where flowsheetrowdim.name  IN ('AH AMB BSA HEIGHT INCHES - NEW DATA CONVERSION',
-'HEIGHT') and flowsheetvaluefact.numericvalue is not null  AND flowsheetvaluefact.takeninstant IS NOT null  AND flowsheetvaluefact.encounterkey>1 and encounterfact.type<>'Historical encounter') 
-		WHERE latestrow=1
-        )
-        
-        
-,WeightScale AS
-(SELECT DISTINCT patientdurablekey,takeninstant ,unit,value   FROM ( select 
-        flowsheetvaluefact.patientdurablekey, 
-      CASE WHEN flowsheetrowdim.unit='ounces' THEN flowsheetvaluefact.NumericValue*0.0283495231 else  flowsheetvaluefact.NumericValue END value  , 
-        CASE WHEN flowsheetrowdim.unit='ounces' THEN 'Kg' else  flowsheetrowdim.unit END AS unit , 
-        flowsheetrowdim.name , 
-             flowsheetvaluefact.takeninstant takeninstant,
-        row_number() over (partition by flowsheetvaluefact.patientdurablekey order by  flowsheetvaluefact.takeninstant desc) as latestrow
-from caboodle.flowsheetvaluefact    join caboodle.encounterfact on flowsheetvaluefact.encounterkey=encounterfact.encounterkey
-left join caboodle.flowsheetrowdim   on flowsheetvaluefact.flowsheetrowkey = flowsheetrowdim.flowsheetrowkey 
-where flowsheetrowdim.name in('WEIGHT/SCALE' ,'R BAR WEIGHT CHANGE SINCE LAST VISIT','AH AMB WEIGHT (FOR CALC) - NEW DATA CONVERSION')
-and flowsheetvaluefact.numericvalue is not null  AND flowsheetvaluefact.takeninstant IS NOT NULL AND flowsheetvaluefact.encounterkey>1 and encounterfact.type<>'Historical encounter'
-        ) WHERE latestrow=1
-        )
-        
-        
-        
-        
-,BloodPressure 
- AS (SELECT DISTINCT patientdurablekey,takeninstant ,unit,value   FROM ( select 
-        flowsheetvaluefact.patientdurablekey, 
-        flowsheetvaluefact.value , 
-        'mmHg' AS unit , 
-        flowsheetrowdim.name , 
-              flowsheetvaluefact.takeninstant takeninstant,
-        row_number() over (partition by flowsheetvaluefact.patientdurablekey order by  flowsheetvaluefact.takeninstant  desc) as latestrow
-from caboodle.flowsheetvaluefact    join caboodle.encounterfact on flowsheetvaluefact.encounterkey=encounterfact.encounterkey
-left join caboodle.flowsheetrowdim on flowsheetvaluefact.flowsheetrowkey = flowsheetrowdim.flowsheetrowkey 
-where flowsheetrowdim.NAME IN('R ARTERIAL LINE BLOOD PRESSURE', 'R ARTERIAL LINE BLOOD PRESSURE 2', 'R ARTERIAL LINE BLOOD PRESSURE AO', 'BLOOD PRESSURE','AH AMB BP - NEW DATA CONVERSION') 
-AND flowsheetvaluefact.value IS NOT NULL AND flowsheetvaluefact.takeninstant IS NOT NULL AND flowsheetvaluefact.encounterkey>1 and encounterfact.type<>'Historical encounter'
-        ) WHERE latestrow=1
-        )
-        
-        ,SpO2 
- AS (SELECT DISTINCT patientdurablekey,takeninstant ,unit,value   FROM ( select 
-        flowsheetvaluefact.patientdurablekey, 
-      flowsheetvaluefact.numericvalue value ,
-        flowsheetrowdim.unit , 
-        flowsheetrowdim.name , 
-             flowsheetvaluefact.takeninstant AS takeninstant,
-        row_number() over (partition by flowsheetvaluefact.patientdurablekey order by  flowsheetvaluefact.takeninstant  desc) as latestrow
-from caboodle.flowsheetvaluefact    join caboodle.encounterfact on flowsheetvaluefact.encounterkey=encounterfact.encounterkey 
-left join caboodle.flowsheetrowdim on flowsheetvaluefact.flowsheetrowkey = flowsheetrowdim.flowsheetrowkey 
-where flowsheetrowdim.NAME in ('PULSE OXIMETRY [COMPILED RECORD] [FLOWSHEET AGE ADULT]','PULSE OXIMETRY', 'R IP SPO2,R AN SPO2','R PEDS SPO2','AH AMB SPO2 - NEW DATA CONVERSION',
-'R BAR SPO2','PULSE OXIMETRY [COMPILED RECORD] [FLOWSHEET AGE 31-365]','PULSE OXIMETRY [COMPILED RECORD] [FLOWSHEET AGE NEONATE]','PULSE OXIMETRY','AH AMB O2 SATURATION - NEW DATA CONVERSION',
-'PULSE OXIMETRY [COMPILED RECORD] [FLOWSHEET AGE 0-30]')AND numericvalue IS NOT NULL AND flowsheetvaluefact.takeninstant IS NOT NULL AND flowsheetvaluefact.encounterkey>1 and encounterfact.type<>'Historical encounter'
-
-        ) WHERE latestrow=1
-        )
-        
-        
- ,HeartRate 
-  AS (SELECT DISTINCT patientdurablekey,takeninstant ,unit,value   FROM ( select 
-        flowsheetvaluefact.patientdurablekey, 
-        flowsheetvaluefact.numericvalue value  , 
-        'BPM' AS unit , 
-        flowsheetrowdim.name , 
-            flowsheetvaluefact.takeninstant takeninstant,
-        row_number() over (partition by flowsheetvaluefact.patientdurablekey order by flowsheetvaluefact.takeninstant desc) as latestrow
-from caboodle.flowsheetvaluefact   join caboodle.encounterfact on flowsheetvaluefact.encounterkey=encounterfact.encounterkey 
-left join caboodle.flowsheetrowdim on flowsheetvaluefact.flowsheetrowkey = flowsheetrowdim.flowsheetrowkey 
-    where 
-    flowsheetrowdim.name IN ('AH AMB HEART RATE - NEW DATA CONVERSION','R HEART RATE SOURCE','R CV MAC HEART RATE','PULSE','AH AMB PULSE RATE - NEW DATA CONVERSION') 
-    and flowsheetvaluefact.numericvalue is not null AND flowsheetvaluefact.takeninstant IS NOT NULL AND flowsheetvaluefact.encounterkey>1 and encounterfact.type<>'Historical encounter'
-        ) WHERE latestrow=1
-        )
-        
- ,Respirations AS (SELECT DISTINCT patientdurablekey,takeninstant ,unit,value   FROM ( select 
-        flowsheetvaluefact.patientdurablekey, 
-       flowsheetvaluefact.numericvalue value, 
-        flowsheetrowdim.unit , 
-        flowsheetrowdim.name , 
-          flowsheetvaluefact.takeninstant takeninstant,
-        row_number() over (partition by flowsheetvaluefact.patientdurablekey order by  flowsheetvaluefact.takeninstant desc) as latestrow
-from caboodle.flowsheetvaluefact    join caboodle.encounterfact on flowsheetvaluefact.encounterkey=encounterfact.encounterkey 
-left join caboodle.flowsheetrowdim on flowsheetvaluefact.flowsheetrowkey = flowsheetrowdim.flowsheetrowkey 
-    where 
-    flowsheetrowdim.name IN ('RESPIRATIONS','AH AMB RESPIRATION RATE - NEW DATA CONVERSION') 
-    and flowsheetvaluefact.numericvalue is not null  AND flowsheetvaluefact.takeninstant IS NOT NULL AND flowsheetvaluefact.encounterkey>1 and encounterfact.type<>'Historical encounter'
-        ) WHERE latestrow=1
-        )
-        
-
-      /*Latest HbA1C */  
-        
-,HbA1C AS (SELECT DISTINCT patientdurablekey,resultinstant ,unit,value   FROM (  
-          select distinct 
-        labcomponentresultfact.patientdurablekey , 
-        labcomponentresultfact.value , 
-        labcomponentresultfact.unit , 
-       	labcomponentresultfact.resultinstant,
-        row_number() over (partition by labcomponentresultfact.patientdurablekey order by labcomponentresultfact.resultinstant DESC) as LatestValues
-from caboodle.labcomponentresultfact  
-left join caboodle.labcomponentdim  on labcomponentresultfact.labcomponentkey = labcomponentdim.labcomponentkey
- 	where labcomponentdim.loinccode IN  ('4548-4','17856-6') -- Loinccodes  for hba1c 
-       AND value IS NOT null  AND labcomponentresultfact.resultinstant IS NOT NULL AND labcomponentresultfact.encounterkey>1  )WHERE LatestValues=1
-        )
-        
-        
-        
-        /*Glomerular filtration CKD*/
-,eGFR AS (SELECT DISTINCT patientdurablekey,resultinstant ,unit,value   FROM (  
-          select distinct 
-        labcomponentresultfact.patientdurablekey , 
-        labcomponentresultfact.value , 
-        labcomponentresultfact.unit , 
-       labcomponentresultfact.resultinstant,
-        row_number() over (partition by labcomponentresultfact.patientdurablekey order by labcomponentresultfact.resultinstant DESC) as LatestValues
-from caboodle.labcomponentresultfact  
-left join caboodle.labcomponentdim   on labcomponentresultfact.labcomponentkey = labcomponentdim.labcomponentkey
-left join  caboodle.loincdim loincdim ON LoincDim.LoincKey = labcomponentresultfact.LoincKey
-    where 
-        (labcomponentdim.loinccode  IN ('98979-8', '88293-6','62238-1','98980-6','88294-4','69405-9','48642-3','94677-2','96591-3','78006-4','77147-7','76633-7','96592-1','48643-1','50210-4')
-        -- Loinccodes  for EGFr
-        OR LoincDim.loinccode  IN ('98979-8', '88293-6','62238-1','98980-6','88294-4','69405-9','48642-3','94677-2','96591-3','78006-4','77147-7','76633-7','96592-1','48643-1','50210-4') 
-   		 )AND value IS NOT NULL  AND labcomponentresultfact.resultinstant IS NOT NULL AND   labcomponentresultfact.encounterkey>1 
-         ) WHERE LatestValues=1
-         )
-
-        
-,ALT AS (SELECT DISTINCT patientdurablekey,resultinstant ,unit,value   FROM (  
-          select distinct 
-        labcomponentresultfact.patientdurablekey , 
-        labcomponentresultfact.value , 
-        labcomponentresultfact.unit , 
-       labcomponentresultfact.resultinstant,
-        row_number() over (partition by labcomponentresultfact.patientdurablekey order by labcomponentresultfact.resultinstant DESC) as LatestValues    
-from caboodle.labcomponentresultfact  
-left join caboodle.labcomponentdim   
-on labcomponentresultfact.labcomponentkey = labcomponentdim.labcomponentkey
-	where labcomponentdim.loinccode IN  ('69551-0','1742-6','1744-2') -- Loinccodes  for ALT
-       AND value IS NOT NULL AND labcomponentresultfact.resultinstant IS NOT NULL  AND   labcomponentresultfact.encounterkey>1 )WHERE LatestValues=1
-        )
-        
-        
-,AST AS (SELECT DISTINCT patientdurablekey,resultinstant ,unit,value   FROM (  
-          select distinct 
-        labcomponentresultfact.patientdurablekey , 
-        labcomponentresultfact.value , 
-        labcomponentresultfact.unit , 
-       labcomponentresultfact.resultinstant,
-        row_number() over (partition by labcomponentresultfact.patientdurablekey order by labcomponentresultfact.resultinstant DESC) as LatestValues    
-from caboodle.labcomponentresultfact  
-left join caboodle.labcomponentdim   
-on labcomponentresultfact.labcomponentkey = labcomponentdim.labcomponentkey
-	where labcomponentdim.name ='AST' -- labName 
-	AND value IS NOT NULL AND labcomponentresultfact.resultinstant IS NOT NULL  AND   labcomponentresultfact.encounterkey>1
-        )WHERE LatestValues=1
-        )
-        
-/*Demographics*/
-SELECT DISTINCT
-patientdim.patientepicid PatientEpicId,	
-patientdim.durablekey PatientDurablekey,
-patientdim.primarymrn Mrn,
-patientdim.sex ,
-CASE WHEN patientdim.multiracial =0 THEN 'No' ELSE 'Yes' END AS multiracial  ,
-patientdim.ageinyears CurrentAge, 
-CASE WHEN patientdim.Ethnicity IN ('*Deleted', '*Not Applicable', '*Unspecified', '*Unknown') THEN 'Unknown' ELSE   patientdim.Ethnicity END Ethnicity,
-BloodPressure.takeninstant BloodPressureRecordedDate,
-BloodPressure.unit BloodPressureUnit,
-BloodPressure.value BloodPressureValue,
-HeartRate.takeninstant HeartRateRecordeDate ,
-HeartRate.unit HeartRateUnit,
-Round(HeartRate.value) HeartRate,
-Respirations.takeninstant RespirationsRecordeDate ,
----Respirations.unit RespirationsUnit,
-Respirations.value RespirationsValue,
-SpO2.takeninstant Spo2ResultedDate,
-SpO2.unit Spo2Unit,
-Round(SpO2.value) Spo2Value,
-WeightScale.takeninstant WeightRecordedDate,
-WeightScale.unit WeightScale,
-Round(WeightScale.value,1) CurrentWeight,
-height.takeninstant HeightRecordedDate,
-height.unit HeightScale,
-height.value CurrentHeight ,
-bmi.takeninstant BMIRecordedDate,
-bmi.unit BMIUnit,
-bmi.value BmiValue,
-HbA1C.resultinstant HbA1CResultedDate,
-HbA1C.unit HbA1CUnit,
-HbA1C.value HbA1CValue,
-eGFR.resultinstant eGFRResultedDate,
-eGFR.unit eGFRUnit,
-eGFR.value eGFRValue,
-ALT.resultinstant ALTResultedDate,
-ALT.unit ALTUnit,
-ALT.value ALTValue,
-AST.resultinstant ASTResultedDate,
-AST.unit ASTUnit,
-AST.value ASTValue,
-
-
-CASE
-								WHEN patientdim.SmokingStatus IN ('*Deleted', '*Not Applicable', '*Unspecified', '*Unknown') OR length(ltrim(rtrim(patientdim.SmokingStatus))) = 0 OR patientdim.SmokingStatus = 'Never Assessed' THEN 'Never Assessed'
-								WHEN patientdim.SmokingStatus = 'Current Every Day Smoker' THEN 'Current every day smoker'
-								WHEN patientdim.SmokingStatus = 'Current Some Day Smoker' THEN 'Current Some Day Smoker'
-								WHEN patientdim.SmokingStatus = 'Former Smoker' THEN 'Former Smoker'
-								WHEN patientdim.SmokingStatus = 'Never Smoker' THEN 'Never Smoker'
-								WHEN patientdim.SmokingStatus = 'Unknown If Ever Smoked' THEN 'Unknown If Ever Smoked'
-								WHEN patientdim.SmokingStatus = 'Heavy Tobacco Smoker' THEN 'Heavy Tobacco Smoker'
-								WHEN patientdim.SmokingStatus = 'Light Tobacco Smoker' THEN 'Light Tobacco Smoker'
-								WHEN patientdim.SmokingStatus = 'Smoker, Current Status Unknown' THEN 'Smoker, current status unknown'
-								ELSE 'Unknown'
-								END SMOKINGSTATUS ,
-CASE
-								WHEN patientdim.SmokingStatus IN ('*Deleted', '*Not Applicable', '*Unspecified', '*Unknown')OR length(ltrim(rtrim(patientdim.SmokingStatus))) = 0 OR patientdim.SmokingStatus = 'Never Assessed' THEN 'Never Assessed'
-								WHEN  patientdim.SmokingStatus = 'Heavy Tobacco Smoker' THEN 'Current user'
-								WHEN  patientdim.SmokingStatus = 'Light Tobacco Smoker' THEN 'Passive or enviromental exposure'
-								WHEN patientdim.SmokingStatus = 'Former Smoker' THEN 'Quit/Former user' 
-								WHEN patientdim.SmokingStatus = 'Never Smoker' THEN 'Never'
-								WHEN patientdim.SmokingStatus = 'Unknown If Ever Smoked' OR  patientdim.SmokingStatus = 'Smoker, Current Status Unknown' THEN 'Unknown'
-								ELSE NULL
-								END  TOBACCOUser
-		FROM					
-				caboodle.patientdim patientdim 
-				LEFT JOIN Bmi ON Bmi.PatientDurableKey = PatientDim.DurableKey
-				LEFT JOIN Height ON Height.PatientDurableKey = PatientDim.DurableKey
-				LEFT JOIN WeightScale ON WeightScale.PatientDurableKey = PatientDim.DurableKey
-				LEFT JOIN BloodPressure ON BloodPressure.PatientDurableKey = PatientDim.DurableKey
-				LEFT JOIN HeartRate ON HeartRate.PatientDurableKey = PatientDim.DurableKey
-				LEFT JOIN HbA1C ON HbA1C.PatientDurableKey = PatientDim.DurableKey 
-				LEFT JOIN eGFR ON eGFR.PatientDurableKey = PatientDim.DurableKey 
-				LEFT JOIN ALT ON ALT.PatientDurableKey = PatientDim.DurableKey 
-				LEFT JOIN AST ON AST.PatientDurableKey = PatientDim.DurableKey 
-				LEFT JOIN SpO2 ON SpO2.PatientDurableKey = PatientDim.DurableKey 
-				LEFT JOIN Respirations ON Respirations.PatientDurableKey = PatientDim.DurableKey 	
-				WHERE  PatientDim.iscurrent = 1 AND patientdim.test<>1 AND patientdim.primarymrn <>'*Not Applicable'
+SELECT statusChanges.RESEARCH_ID,
+       statusChanges.LINE,
+       CASE WHEN statusChanges.HX_BILLING_STATUS_C IS NULL THEN '*Unspecified'
+            WHEN ZC_RESEARCH_STATUS.RESEARCH_STATUS_C IS NULL THEN '*Unknown'
+            ELSE ZC_RESEARCH_STATUS.NAME END BILLING_STATUS,
+       statusChanges.STATUS_START_DATE,
+       LEAD( statusChanges.STATUS_START_DATE, 1, DATEFROMPARTS( 9999, 12, 31 ) ) OVER ( PARTITION BY statusChanges.RESEARCH_ID ORDER BY statusChanges.STATUS_START_DATE, statusChanges.LINE ASC ) STATUS_END_DATE
+FROM statusChanges
+  LEFT OUTER JOIN ZC_RESEARCH_STATUS
+    ON statusChanges.HX_BILLING_STATUS_C = ZC_RESEARCH_STATUS.RESEARCH_STATUS_C 
