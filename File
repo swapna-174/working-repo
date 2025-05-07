@@ -1,1 +1,14 @@
-"I received this picture from our driver. Can you confirm whose car is the black one and who owns the white bike? Also, I noticed the bike is parked incorrectly—bikes should be parked in the designated bike space, not in the pathway. Additionally, there are cycles occupying bike spaces. Could we please have them moved out of the way?
+Select 
+  AGPI.ACCOUNT_ID  -- Base ID    -- \ Allowed ID
+, AGPI.LINE                      -- /
+, AGPI.PAT_ID
+, Case When AGPI.GUAR_REL_TO_PAT_C is NULL Then '*Unspecified'
+       When ZC.GUAR_REL_TO_PAT_C is NULL   Then '*Unknown'
+       Else ZC.NAME
+       End  RelationshipToPatient
+From      ACCT_GUAR_PAT_INFO  AGPI
+Left Join ZC_GUAR_REL_TO_PAT  ZC
+          on AGPI.GUAR_REL_TO_PAT_C = ZC.GUAR_REL_TO_PAT_C
+Where AGPI.PAT_ID is NOT NULL
+  and AGPI.ACCOUNT_ID >   {{LowerBound}}
+  and AGPI.ACCOUNT_ID <=  {{UpperBound}}
