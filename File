@@ -1,14 +1,1 @@
-Select 
-  AGPI.ACCOUNT_ID  -- Base ID    -- \ Allowed ID
-, AGPI.LINE                      -- /
-, AGPI.PAT_ID
-, Case When AGPI.GUAR_REL_TO_PAT_C is NULL Then '*Unspecified'
-       When ZC.GUAR_REL_TO_PAT_C is NULL   Then '*Unknown'
-       Else ZC.NAME
-       End  RelationshipToPatient
-From      ACCT_GUAR_PAT_INFO  AGPI
-Left Join ZC_GUAR_REL_TO_PAT  ZC
-          on AGPI.GUAR_REL_TO_PAT_C = ZC.GUAR_REL_TO_PAT_C
-Where AGPI.PAT_ID is NOT NULL
-  and AGPI.ACCOUNT_ID >   {{LowerBound}}
-  and AGPI.ACCOUNT_ID <=  {{UpperBound}}
+@[User::TargetFolder]+"AspireAnthem_DailyRoster"+"_"+ RIGHT("0" + (DT_WSTR,2)DATEPART("mm",GetDate()) ,2)  + RIGHT("0" + (DT_WSTR,2)DATEPART("dd",GetDate()),2)  +(DT_WSTR,4)DATEPART("yyyy",GetDate())  + ".txt"
