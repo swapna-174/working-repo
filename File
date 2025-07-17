@@ -1,1 +1,50 @@
-I am currently learning data science to improve my skills in analyzing and interpreting data. This includes studying Python programming, data manipulation with pandas and numpy, data visualization using matplotlib and seaborn, and basic machine learning concepts. My goal is to use these skills to extract meaningful insights and support data-driven decisions
+-- Copyright 2025 Atrium Health
+--********************************************************************************************************************************
+--** EDW_ETL.Obhg_MonthlyDeliveries_Extract_X
+--********************************************************************************************************************************
+-- PURPOSE:   This procedure returns counts of monthly delivers for Navicent,Union,Stanly,Union West
+-- AUTHOR:    Swapna Boga
+-- DATABASE:  CDW
+-- SCHEMA:    EDW_ETL
+-- FREQUENCY: Monthly- 9th of every month
+-- CUSTOMER:  Lacey Simpson Perez <ssimpsonperez@obhg.com>
+-- PARAMETERS:LocationEpicId
+--********************************************************************************************************************************
+-- CHANGE HISTORY:
+-- 
+-- DATE        AUTHOR            DESCRIPTION OF CHANGES
+-- ----        ------            ----------------------
+-- 01/24/2025  Swapna Boga        New Procedure 
+-- 
+--********************************************************************************************************************************
+
+CREATE OR ALTER PROCEDURE [EDW_ETL].[Obhg_MonthlyDeliveries_Extract_X]
+ @LocationEpicId varchar(18)  as 
+
+SELECT DISTINCT
+CONCAT(left(datename(month,DateDim_Birth.DateValue),3),'-' ,RIGHT(datename(YEAR,DateDim_Birth.DateValue),2)) MonthYear,
+count(distinct(BirthFact.BirthEpicId)) Delivery_Count,
+count(distinct(PregnancyFact.PregnancyEpicId)) Birth_Count,
+SUM(CASE WHEN BirthFact.CesareanDelivery  =  1  and PregnancyFact .PriorCesarean  <>1 then 1 ELSE 0 end)  Primary_Cesarean_Sections,
+SUM(CASE WHEN BirthFact.CesareanDelivery  =  1 then 1 else 0 END  ) Cesarean_Deliveries,
+SUM(CASE WHEN BirthFact.CesareanDelivery  =  1   and BirthFact.PresentationVertex  =  1 and  PregnancyFact.PregnancyParaCount  =  0 
+	AND BirthFact.GestationalAgeDays  >  259 and NumberOfFetuses =1 then 1 else 0  end  )NTSV_Cesarean_Sections,
+SUM(CASE WHEN BirthFact.CesareanDelivery  =  0   and BirthFact.PresentationVertex  =  1 and  PregnancyFact.PregnancyParaCount  =  0 AND BirthFact.GestationalAgeDays  >  259 and NumberOfFetuses =1 
+				then 1 else 0  end  )NTSV_Deliveries,
+SUM(CASE WHEN BirthFact.CesareanDelivery  =  1  and PregnancyFact .PriorCesarean  =1   then 1 else 0 END  )Repeat_Cesarean_Sections,
+SUM(CASE WHEN   (SpontaneousVaginalDelivery =1 OR ForcepsDelivery=1  OR VacuumDelivery =1 ) and PriorCesarean=1  then 1 else 0 end) VBAC_Deliveries,
+SUM(CASE WHEN   (SpontaneousVaginalDelivery =1 OR ForcepsDelivery=1  OR VacuumDelivery =1 ) and  (PriorCesarean  = 0  OR PriorCesarean  IS NULL)  then 1 else 0 end) Vaginal_Excluding_VBAC_Deliveries,
+SUM(CASE WHEN SpontaneousVaginalDelivery =1 OR ForcepsDelivery=1  OR VacuumDelivery =1 then 1 else 0 end) Vaginal_Deliveries
+FROM BirthFact LEFT JOIN  PregnancyFact ON BirthFact.PregnancyKey=PregnancyFact.PregnancyKey
+   INNER JOIN EncounterFact ON BirthFact.MotherEncounterKey=EncounterFact.EncounterKey
+   INNER JOIN DepartmentDim ON EncounterFact.DepartmentKey=DepartmentDim.DepartmentKey
+   INNER JOIN DateDim  DateDim_Birth ON DateDim_Birth.DateKey=BirthFact.BirthDateKey
+   INNER JOIN PatientDim  PatientDim_Baby  ON PatientDim_Baby.IsCurrent = 1  AND  BirthFact.BabyPatientDurableKey=PatientDim_Baby.DurableKey
+   INNER JOIN PatientDim  PatientDim_Mother ON PatientDim_Mother.IsCurrent = 1  
+				AND  BirthFact.MotherPatientDurableKey=PatientDim_Mother.DurableKey
+	WHERE DepartmentDim.LocationEpicId =@LocationEpicId
+	---where   DepartmentDim.LocationEpicId  IN  ( '100040','100060','100062'  )----- testing
+	AND DateDim_Birth.DateValue  BETWEEN  DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 1, 0)  AND  DateAdd(day, -1, convert(datetime, '1-' + datename(month, getdate()) + '-' + datename(year, getdate())))
+	AND DepartmentDim.ServiceAreaEpicId In ('10', '30', '40', '70')  
+	AND PatientDim_Mother.IsValid = 1  AND PatientDim_Baby.IsValid = 1  
+group by CONCAT(left(datename(month,DateDim_Birth.DateValue),3),'-' ,RIGHT(datename(YEAR,DateDim_Birth.DateValue),2))
