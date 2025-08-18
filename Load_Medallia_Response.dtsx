@@ -1,0 +1,2071 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/5/2018 1:27:52 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="PC-879842"
+  DTS:CreatorName="CAROLINAS\dsilta01"
+  DTS:DTSID="{244108F5-DC09-4B0B-B604-1EA75AC6159A}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.5467.0"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="Load_Medallia_Response"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="2"
+  DTS:VersionBuild="86"
+  DTS:VersionGUID="{77E57CCB-5A51-4911-A164-3091C639A50A}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Flat File Connection Manager]"
+      DTS:CreationName="FLATFILE"
+      DTS:DelayValidation="True"
+      DTS:DTSID="{2034DB2B-DC38-40BD-B526-045391AFD613}"
+      DTS:ObjectName="Flat File Connection Manager">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:Format="Delimited"
+          DTS:LocaleID="1033"
+          DTS:HeaderRowDelimiter="_x000D__x000A_"
+          DTS:ColumnNamesInFirstDataRow="True"
+          DTS:RowDelimiter=""
+          DTS:TextQualifier="_x0022_"
+          DTS:CodePage="1252"
+          DTS:ConnectionString="\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File\INBOUND\Atrium Health_Responses.csv">
+          <DTS:FlatFileColumns>
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x007C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="surveyid"
+              DTS:DTSID="{EC5D6069-CF33-4EBC-9EDD-1FCE3BAC8E40}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x007C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="Program Name"
+              DTS:DTSID="{DA352378-1B54-481D-90CC-E44FF871C5F3}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x007C_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="question_id"
+              DTS:DTSID="{5D8A93ED-3507-436A-875C-28B09CF86B6F}"
+              DTS:CreationName="" />
+            <DTS:FlatFileColumn
+              DTS:ColumnType="Delimited"
+              DTS:ColumnDelimiter="_x000A_"
+              DTS:MaximumWidth="50"
+              DTS:DataType="129"
+              DTS:TextQualified="True"
+              DTS:ObjectName="answer_txt"
+              DTS:DTSID="{2AD5DE2E-D30E-494D-9A13-15159AD5A27A}"
+              DTS:CreationName="" />
+          </DTS:FlatFileColumns>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{CE9DF5D6-6A08-4F03-83B1-26D87E278CC5}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="varApplication">
+      <DTS:VariableValue
+        DTS:DataType="8">Medallia Response</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{E3D3F36F-7D17-4459-8DA2-F0A87662B2CB}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="varFileArchive">
+      <DTS:VariableValue
+        DTS:DataType="8">\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File\ARCHIVE</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{9618F5C6-2BE4-4FD9-B3D8-A223281BDD70}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="varFilePath">
+      <DTS:VariableValue
+        DTS:DataType="8">\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File\INBOUND\Atrium Health_Responses.csv</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{7FB59D00-EE0A-4EEC-850C-5FCEFC3CC811}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="varFileSource">
+      <DTS:VariableValue
+        DTS:DataType="8">\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{47F392DE-39D2-48FA-B3EE-4BADAC2DF4CD}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="varFileToCopy">
+      <DTS:VariableValue
+        DTS:DataType="8">default</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{F66B2F83-CB64-4E7E-905E-6F41268C21BE}"
+      DTS:IncludeInDebugDump="6789"
+      DTS:Namespace="User"
+      DTS:ObjectName="varIsFileExist">
+      <DTS:VariableValue
+        DTS:DataType="11">0</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{2B1E3EF5-7A76-4C01-B2DF-50C001D803C1}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="varJobNm">
+      <DTS:VariableValue
+        DTS:DataType="8">EIM_Load_Medallia_Reponse</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\01 - CHECK FOR FILE EXISTENCE"
+      DTS:CreationName="Microsoft.ScriptTask"
+      DTS:Description="Script Task"
+      DTS:DTSID="{DE70D86E-2E3E-4ABD-8CED-8E30731BB076}"
+      DTS:ExecutableType="Microsoft.ScriptTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="01 - CHECK FOR FILE EXISTENCE"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ScriptProject
+          Name="ST_a68737bb1dfa4df49c89551eebd999ef"
+          VSTAMajorVersion="14"
+          VSTAMinorVersion="0"
+          Language="VisualBasic"
+          ReadOnlyVariables="User::varIsFileExist">
+          <ProjectItem
+            Name="My Project\AssemblyInfo.vb"
+            Encoding="UTF8"><![CDATA[Imports System
+Imports System.Reflection
+Imports System.Runtime.InteropServices
+
+' General Information about an assembly is controlled through the following 
+' set of attributes. Change these attribute values to modify the information
+' associated with an assembly.
+
+' Review the values of the assembly attributes
+
+<Assembly: AssemblyTitle("ST_06263e6941ea43f9b49ff6c13911b141")> 
+<Assembly: AssemblyDescription("")> 
+<Assembly: AssemblyCompany("")> 
+<Assembly: AssemblyProduct("ST_06263e6941ea43f9b49ff6c13911b141")> 
+<Assembly: AssemblyCopyright("Copyright @  2014")> 
+<Assembly: AssemblyTrademark("")> 
+<Assembly: CLSCompliant(True)> 
+
+<Assembly: ComVisible(False)> 
+
+'The following GUID is for the ID of the typelib if this project is exposed to COM
+<Assembly: Guid("8bf0287a-8a07-441a-9636-199e93da57b6")> 
+
+' Version information for an assembly consists of the following four values:
+'
+'      Major Version
+'      Minor Version 
+'      Build Number
+'      Revision
+'
+' You can specify all the values or you can default the Build and Revision Numbers 
+' by using the '*' as shown below:
+' <Assembly: AssemblyVersion("1.0.*")>
+
+<Assembly: AssemblyVersion("1.0.0.0")> 
+<Assembly: AssemblyFileVersion("1.0.0.0")> ]]></ProjectItem>
+          <ProjectItem
+            Name="ScriptMain.vb"
+            Encoding="UTF8"><![CDATA[#Region "Help:  Introduction to the script task"
+'The Script Task allows you to perform virtually any operation that can be accomplished in
+'a .Net application within the context of an Integration Services control flow. 
+
+'Expand the other regions which have "Help" prefixes for examples of specific ways to use
+'Integration Services features within this script task.
+#End Region
+Imports System
+Imports System.Data
+Imports System.Math
+Imports Microsoft.SqlServer.Dts.Runtime
+Imports System.IO
+
+#Region "Imports"
+
+#End Region
+
+'ScriptMain is the entry point class of the script.  Do not change the name, attributes,
+'or parent of this class.
+<Microsoft.SqlServer.Dts.Tasks.ScriptTask.SSISScriptTaskEntryPointAttribute()> _
+<System.CLSCompliantAttribute(False)> _
+Partial Public Class ScriptMain
+    Inherits Microsoft.SqlServer.Dts.Tasks.ScriptTask.VSTARTScriptObjectModelBase
+
+#Region "Help:  Using Integration Services variables and parameters in a script"
+    'To use a variable in this script, first ensure that the variable has been added to 
+    'either the list contained in the ReadOnlyVariables property or the list contained in 
+    'the ReadWriteVariables property of this script task, according to whether or not your
+    'code needs to write to the variable.  To add the variable, save this script, close this instance of
+    'Visual Studio, and update the ReadOnlyVariables and 
+    'ReadWriteVariables properties in the Script Transformation Editor window.
+    'To use a parameter in this script, follow the same steps. Parameters are always read-only.
+
+    'Example of reading from a variable:
+    ' startTime = Dts.Variables("System::StartTime").Value
+
+    'Example of writing to a variable:
+    ' Dts.Variables("User::myStringVariable").Value = "new value"
+
+    'Example of reading from a package parameter:
+    ' batchId = Dts.Variables("$Package::batchId").Value
+
+    'Example of reading from a project parameter:
+    ' batchId = Dts.Variables("$Project::batchId").Value
+
+    'Example of reading from a sensitive project parameter:
+    ' batchId = Dts.Variables("$Project::batchId").GetSensitiveValue()
+#End Region
+
+#Region "Help:  Firing Integration Services events from a script"
+    'This script task can fire events for logging purposes.
+
+    'Example of firing an error event:
+    ' Dts.Events.FireError(18, "Process Values", "Bad value", "", 0)
+
+    'Example of firing an information event:
+    ' Dts.Events.FireInformation(3, "Process Values", "Processing has started", "", 0, fireAgain)
+
+    'Example of firing a warning event:
+    ' Dts.Events.FireWarning(14, "Process Values", "No values received for input", "", 0)
+#End Region
+
+#Region "Help:  Using Integration Services connection managers in a script"
+    'Some types of connection managers can be used in this script task.  See the topic 
+    '"Working with Connection Managers Programatically" for details.
+
+    'Example of using an ADO.Net connection manager:
+    ' Dim rawConnection As Object = Dts.Connections("Sales DB").AcquireConnection(Dts.Transaction)
+    ' Dim myADONETConnection As SqlConnection = CType(rawConnection, SqlConnection)
+    ' <Use the connection in some code here, then release the connection>
+    ' Dts.Connections("Sales DB").ReleaseConnection(rawConnection)
+
+    'Example of using a File connection manager
+    ' Dim rawConnection As Object = Dts.Connections("Prices.zip").AcquireConnection(Dts.Transaction)
+    ' Dim filePath As String = CType(rawConnection, String)
+    ' <Use the connection in some code here, then release the connection>
+    ' Dts.Connections("Prices.zip").ReleaseConnection(rawConnection)
+#End Region
+
+    'This method is called when this script task executes in the control flow.
+    'Before returning from this method, set the value of Dts.TaskResult to indicate success or failure.
+    'To open Help, press F1.
+
+    Public Sub Main()
+        '
+        ' Add your code here
+        '
+
+        Dim directory As DirectoryInfo = New DirectoryInfo("\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File")
+        Dim file As FileInfo() = directory.GetFiles("Atrium Health_*.csv")
+
+        If file.Length > 0 Then
+            Dts.Variables("User::varIsFileExist").Value = True
+        Else
+            Dts.Variables("User::varIsFileExist").Value = False
+        End If
+        Dts.TaskResult = ScriptResults.Success
+
+    End Sub
+
+#Region "ScriptResults declaration"
+    'This enum provides a convenient shorthand within the scope of this class for setting the
+    'result of the script.
+
+    'This code was generated automatically.
+    Enum ScriptResults
+        Success = Microsoft.SqlServer.Dts.Runtime.DTSExecResult.Success
+        Failure = Microsoft.SqlServer.Dts.Runtime.DTSExecResult.Failure
+    End Enum
+
+#End Region
+
+End Class]]></ProjectItem>
+          <ProjectItem
+            Name="ST_a68737bb1dfa4df49c89551eebd999ef.vbproj"
+            Encoding="UTF8"><![CDATA[<?xml version="1.0" encoding="utf-8"?><Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"><PropertyGroup><ProjectTypeGuids>{30D016F9-3734-4E33-A861-5E7D899E18F3};{F184B08F-C81C-45F6-A57F-5ABD9991F28F}</ProjectTypeGuids><Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration><Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform><ProductVersion>8.0.30703</ProductVersion><SchemaVersion>2.0</SchemaVersion><ProjectGuid>{4C6A94DB-5264-4640-A12E-2DBD30827AAB}</ProjectGuid><OutputType>Library</OutputType><AppDesignerFolder>My Project</AppDesignerFolder><RootNamespace>ST_06263e6941ea43f9b49ff6c13911b141</RootNamespace><AssemblyName>ST_a68737bb1dfa4df49c89551eebd999ef</AssemblyName><TargetFrameworkVersion>v4.0</TargetFrameworkVersion><FileAlignment>512</FileAlignment></PropertyGroup><PropertyGroup Condition=" '$(Configuration)' == 'Debug' "><DebugSymbols>true</DebugSymbols><DebugType>full</DebugType><Optimize>false</Optimize><OutputPath>.\bin\Debug\</OutputPath><EnableUnmanagedDebugging>false</EnableUnmanagedDebugging><DefineDebug>true</DefineDebug><DefineTrace>true</DefineTrace><ErrorReport>prompt</ErrorReport><WarningLevel>4</WarningLevel></PropertyGroup><PropertyGroup Condition=" '$(Configuration)' == 'Release' "><DebugSymbols>false</DebugSymbols><Optimize>true</Optimize><OutputPath>.\bin\Release\</OutputPath><EnableUnmanagedDebugging>false</EnableUnmanagedDebugging><DefineDebug>false</DefineDebug><DefineTrace>true</DefineTrace><ErrorReport>prompt</ErrorReport><WarningLevel>4</WarningLevel></PropertyGroup><ItemGroup><Reference Include="System" /><Reference Include="System.Data" /><Reference Include="System.Windows.Forms" /><Reference Include="System.Xml" /><Reference Include="Microsoft.SqlServer.ManagedDTS, Version=13.0.0.0, Culture=Neutral, PublicKeyToken=89845dcd8080cc91" /><Reference Include="Microsoft.SqlServer.ScriptTask, Version=13.0.0.0, Culture=Neutral, PublicKeyToken=89845dcd8080cc91" /></ItemGroup><ItemGroup><Import Include="Microsoft.VisualBasic" /><Import Include="System" /><Import Include="System.Collections" /><Import Include="System.Data" /><Import Include="System.Diagnostics" /><Import Include="System.Windows.Forms" /></ItemGroup><ItemGroup><AppDesigner Include="My Project\" /><Compile Include="My Project\AssemblyInfo.vb"><SubType>Code</SubType></Compile><EmbeddedResource Include="My Project\Resources.resx"><Generator>VbMyResourcesResXFileCodeGenerator</Generator><LastGenOutput>Resources.Designer.vb</LastGenOutput><CustomToolNamespace>My.Resources</CustomToolNamespace></EmbeddedResource><Compile Include="My Project\Resources.Designer.vb"><AutoGen>True</AutoGen><DesignTime>True</DesignTime><DependentUpon>Resources.resx</DependentUpon><SubType>Code</SubType></Compile><None Include="My Project\Settings.settings"><Generator>SettingsSingleFileGenerator</Generator><LastGenOutput>Settings.Designer.vb</LastGenOutput></None><Compile Include="My Project\Settings.Designer.vb"><AutoGen>True</AutoGen><DependentUpon>Settings.settings</DependentUpon><SubType>Code</SubType></Compile><Compile Include="ScriptMain.vb"><SubType>Code</SubType></Compile></ItemGroup><!-- Include the build rules for a VB project.--><Import Project="$(MSBuildBinPath)\Microsoft.VisualBasic.targets" /><ProjectExtensions><VisualStudio><FlavorProperties GUID="{30D016F9-3734-4E33-A861-5E7D899E18F3}"><ProjectProperties HostName="VSTAHostName" HostPackage="{B3A685AA-7EAF-4BC6-9940-57959FA5AC07}" ApplicationType="usd" Language="vb" TemplatesPath="" DebugInfoExeName="" /><Host Name="ScriptTask" /><ProjectClient><HostIdentifier>SSIS_ST130</HostIdentifier></ProjectClient></FlavorProperties></VisualStudio></ProjectExtensions></Project>]]></ProjectItem>
+          <ProjectItem
+            Name="My Project\Settings.settings"
+            Encoding="UTF8"><![CDATA[<?xml version='1.0' encoding='iso-8859-1'?>
+<SettingsFile xmlns="uri:settings" CurrentProfile="(Default)" GeneratedClassNamespace="$safeprojectname" GeneratedClassName="MySettings">
+  <Profiles>
+    <Profile Name="(Default)" />
+  </Profiles>
+  <Settings />
+</SettingsFile>]]></ProjectItem>
+          <ProjectItem
+            Name="My Project\Settings.Designer.vb"
+            Encoding="UTF8"><![CDATA['------------------------------------------------------------------------------
+' <autogenerated>
+'     This code was generated by a tool.
+'
+'     Changes to this file may cause incorrect behavior and will be lost if
+'     the code is regenerated.
+' </autogenerated>
+'------------------------------------------------------------------------------
+
+Option Strict Off
+Option Explicit On
+
+
+
+Partial Friend NotInheritable Class MySettings
+    Inherits System.Configuration.ApplicationSettingsBase
+
+    Private Shared m_Value As MySettings
+
+    Private Shared m_SyncObject As Object = New Object
+
+    <System.Diagnostics.DebuggerNonUserCode()> _
+    Public Shared ReadOnly Property Value() As MySettings
+        Get
+            If (MySettings.m_Value Is Nothing) Then
+                System.Threading.Monitor.Enter(MySettings.m_SyncObject)
+                If (MySettings.m_Value Is Nothing) Then
+                    Try
+                        MySettings.m_Value = New MySettings
+                    Finally
+                        System.Threading.Monitor.Exit(MySettings.m_SyncObject)
+                    End Try
+                End If
+            End If
+            Return MySettings.m_Value
+        End Get
+    End Property
+End Class]]></ProjectItem>
+          <ProjectItem
+            Name="Project"
+            Encoding="UTF16LE"><![CDATA[<?xml version="1.0" encoding="UTF-16" standalone="yes"?>
+<c:Project xmlns:c="http://schemas.microsoft.com/codeprojectml/2010/08/main" xmlns:msb="http://schemas.microsoft.com/developer/msbuild/2003" runtimeVersion="3.0" schemaVersion="1.0">
+	<msb:PropertyGroup>
+		<msb:CodeName>ST_06263e6941ea43f9b49ff6c13911b141</msb:CodeName>
+		<msb:Language>msBuild</msb:Language>
+		<msb:DisplayName>ST_06263e6941ea43f9b49ff6c13911b141</msb:DisplayName>
+		<msb:ProjectId>{2FA119EF-667E-49D5-BAD9-79F26096CCA6}</msb:ProjectId>
+	</msb:PropertyGroup>
+	<msb:ItemGroup>
+		<msb:Project Include="ST_a68737bb1dfa4df49c89551eebd999ef.vbproj"/>
+		<msb:File Include="My Project\Settings.Designer.vb"/>
+		<msb:File Include="My Project\Resources.Designer.vb"/>
+		<msb:File Include="My Project\AssemblyInfo.vb"/>
+		<msb:File Include="My Project\Resources.resx"/>
+		<msb:File Include="ScriptMain.vb"/>
+		<msb:File Include="My Project\Settings.settings"/>
+	</msb:ItemGroup>
+</c:Project>]]></ProjectItem>
+          <ProjectItem
+            Name="My Project\Resources.resx"
+            Encoding="UTF8"><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+</root>]]></ProjectItem>
+          <ProjectItem
+            Name="My Project\Resources.Designer.vb"
+            Encoding="UTF8"><![CDATA['------------------------------------------------------------------------------
+' <autogenerated>
+'     This code was generated by a tool.
+'
+'     Changes to this file may cause incorrect behavior and will be lost if
+'     the code is regenerated.
+' </autogenerated>
+'------------------------------------------------------------------------------
+
+Option Strict Off
+Option Explicit On
+
+
+Namespace My.Resources
+    
+    '''<summary>
+    '''   A strongly-typed resource class, for looking up localized strings, etc.
+    '''</summary>
+    'This class was auto-generated by the Strongly Typed Resource Builder
+    'class via a tool like ResGen or Visual Studio.NET.
+    'To add or remove a member, edit your .ResX file then rerun ResGen
+    'with the /str option, or rebuild your VS project.
+    Class MyResources
+        
+        Private Shared _resMgr As System.Resources.ResourceManager
+        
+        Private Shared _resCulture As System.Globalization.CultureInfo
+        
+        Friend Sub New()
+            MyBase.New
+        End Sub
+        
+        '''<summary>
+        '''   Returns the cached ResourceManager instance used by this class.
+        '''</summary>
+        <System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)>  _
+        Public Shared ReadOnly Property ResourceManager() As System.Resources.ResourceManager
+            Get
+                If (_resMgr Is Nothing) Then
+                    Dim temp As System.Resources.ResourceManager = New System.Resources.ResourceManager("My.Resources.MyResources", GetType(MyResources).Assembly)
+                    _resMgr = temp
+                End If
+                Return _resMgr
+            End Get
+        End Property
+        
+        '''<summary>
+        '''   Overrides the current thread's CurrentUICulture property for all
+        '''   resource lookups using this strongly typed resource class.
+        '''</summary>
+        <System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)>  _
+        Public Shared Property Culture() As System.Globalization.CultureInfo
+            Get
+                Return _resCulture
+            End Get
+            Set
+                _resCulture = value
+            End Set
+        End Property
+    End Class
+End Namespace]]></ProjectItem>
+          <BinaryItem
+            Name="ST_a68737bb1dfa4df49c89551eebd999ef.dll">TVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAgAAAAA4fug4AtAnNIbgBTM0hVGhpcyBwcm9ncmFtIGNhbm5vdCBiZSBydW4gaW4gRE9TIG1v
+ZGUuDQ0KJAAAAAAAAABQRQAATAEDADLyu18AAAAAAAAAAOAAIiALAVAAABoAAAAIAAAAAAAAcjkA
+AAAgAAAAQAAAAAAAEAAgAAAAAgAABAAAAAAAAAAEAAAAAAAAAACAAAAAAgAAAAAAAAMAQIUAABAA
+ABAAAAAAEAAAEAAAAAAAABAAAAAAAAAAAAAAACA5AABPAAAAAEAAAEgEAAAAAAAAAAAAAAAAAAAA
+AAAAAGAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAIAAACAAAAAAAAAAAAAAACCAAAEgAAAAAAAAAAAAAAC50ZXh0AAAAeBkAAAAgAAAAGgAAAAIA
+AAAAAAAAAAAAAAAAACAAAGAucnNyYwAAAEgEAAAAQAAAAAYAAAAcAAAAAAAAAAAAAAAAAABAAABA
+LnJlbG9jAAAMAAAAAGAAAAACAAAAIgAAAAAAAAAAAAAAAAAAQAAAQgAAAAAAAAAAAAAAAAAAAABU
+OQAAAAAAAEgAAAACAAUAkCIAANgVAAABAAAAAAAAAGg4AAC4AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4CKBgAAAoqHgIoGQAACiqmcxoAAAqAAQAABHMbAAAKgAIA
+AARzHAAACoADAAAEcx0AAAqABAAABCoufgEAAARvHgAACioufgIAAARvHwAACioufgMAAARvIAAA
+CioufgQAAARvIQAACioeAigiAAAKKq5+BQAABC0ecgEAAHDQBQAAAigjAAAKbyQAAApzJQAACoAF
+AAAEfgUAAAQqGn4GAAAEKh4CgAYAAAQqQnMiAAAKKCYAAAqACAAABCoeAignAAAKKgAAGzABAD8A
+AAAAAAAAfgcAAAQtMn4IAAAEKCYAAAooKAAACn4HAAAELRxzDQAABoAHAAAE3hB+CAAABCgmAAAK
+KCkAAArcfgcAAAQqAAEQAAACAB0ADCkAEAAAAAAeAigqAAAKKhMwAgBoAAAAAAAAAHIzAABwcysA
+AApynwAAcG8sAAAKjmkWMSICKC0AAApvLgAACnLHAABwby8AAAoXjC8AAAFvMAAACisgAigtAAAK
+by4AAApyxwAAcG8vAAAKFowvAAABbzAAAAoCKC0AAAoWbzEAAAoqNgIDKCYAAAooMgAACioeAigz
+AAAKKi7QCAAAAigjAAAKKh4CKDQAAAoqAAATMAEAFAAAAAEAABECjAUAABstCCgBAAArCisCAgoG
+KiID/hUFAAAbKgAAABMwAgAoAAAAAgAAEQJ7NgAACm83AAAKCgaMCAAAGy0SKAIAACsKAns2AAAK
+Bm84AAAKBipKAigiAAAKAnM5AAAKfTYAAAoqAEJTSkIBAAEAAAAAAAwAAAB2NC4wLjMwMzE5AAAA
+AAUAbAAAAMgHAAAjfgAANAgAADwJAAAjU3RyaW5ncwAAAABwEQAA9AAAACNVUwBkEgAAEAAAACNH
+VUlEAAAAdBIAAGQDAAAjQmxvYgAAAAAAAAACAAABVx2iCQkPAAAA+gEzABYAAAEAAAAwAAAACgAA
+AAwAAAAZAAAABAAAADkAAAACAAAANwAAAAIAAAAEAAAACAAAAAkAAAAIAAAAAQAAAAUAAAABAAAA
+AwAAAAMAAAACAAAAAABEBQEAAAAAAAYAXwPHBwYABATHBwYANgIIBw8AbQgAAAYAdwL5BQYAQgP5
+BQYA6wP5BQYAfwP5BQYAmAP5BQYAvgL5BQYAswN1BQYAYwKBBwYA3wGBBwYACgP5BQYA2QKCBAoA
+AgKiBgoAygEuBQoASgIuBQ4AogFXBw4A2AYbBwYA8gIIBw4AjgKgBw4ApgK7AAYA2Ah1BQ4AvgZX
+Bw4AJwO7AAYAVQF1BQ4AJQDyBAoA7QGJBQYAkgbnBwYAFAbkBQoAsgHPBQYAGQIIBxIAyQPJBBIA
+hgHJBAYApQR1BQYAfAV1BQYADgF1BQYAMgn5BQYApQjHBwYAAAdxBAYAIAZYAAYACwZYABIAHAXJ
+BBYAgAgyARYABQEyAQYAgQV1BQYA6QZ1BQAAAABPAAAAAAABAAEAAAAAAMEFBwlNAAEAAQAAAAAA
+1gYHCVEAAQACAAABEADfCAcJYQABAAMAAAAAACkI+AdhAAUACAAAARAAkwgBAIEABwAMAAEAAACm
+BQEAjQAJAA8ABQEAAEkHAABhAAkAEQAFAQAANAAAAGEACQAYAAIBAADECAAAlQAKABoAMQBXBv0A
+MQAuBgUBMQBCBg0BMQBwBhUBEQDhBh0BEQB6ASEBEQAiBCUBEQDSCCkBIQD9CLsABgaqACwBVoC0
+CC8BVoBaAS8BUCAAAAAABhjzBgYAAQBYIAAAAAAGGPMGBgABAGAgAAAAABEY+QYzAQEAiiAAAAAA
+EwjJBjcBAQCWIAAAAAATCLEFPAEBAKIgAAAAABMIugZBAQEAriAAAAAAEwg5B0YBAQC6IAAAAAAD
+GPMGBgABAMIgAAAAABYIjgZLAQEA7iAAAAAAFghiAVABAQD1IAAAAAAWCG4BVQEBAP0gAAAAABEY
++QYzAQIADiEAAAAABhjzBgYAAgAYIQAAAAAWCCoEWwECAHQhAAAAAAYY8wYGAAIAfCEAAAAABgCs
+BQYAAgDwIQAAAADGAp4IjwACAP4hAAAAAMYC+QCUAAMABiIAAAAAgwBSAWABAwASIgAAAADGApwE
+mAADABwiAAAAABEAlwBlAQMAPCIAAAAAAQCDAG0BBAC6IAAAAAAGGPMGBgAFAEgiAAAAAAMI4ABK
+AAUAfCIAAAAABhjzBgYABQAAAAEARwQAAAEALAYAAAEA8AAAAAEA8AAJAPMGAQARAPMGBgAZAPMG
+CgApAPMGEAAxAPMGEAA5APMGEABBAPMGEABJAPMGEABRAPMGEABZAPMGFQBhAPMGFQBpAPMGEABx
+APMGEAB5APMGEACBAPMGGgCRAPMGIACpAPMGBgCxAPMGBgC5APMGBgDRAPMGJgDpAPMGEAAJAfMG
+BgARAfMGBgCZAPMGBgChAPMGBgAMAPMGBgAUAPMGBgAcAPMGBgAkAPMGBgAMAOAASgAUAOAASgAc
+AOAASgAkAOAASgDBAPMGBgDZACABTwDZAC4JVwDxAPMGXQBBAT4EZQABAfMGBgBJAcMGagBJAekI
+agAZAfMGBgBRAfMGEABRAYoIbwAZAbwIdwBhAXwIfQBpAWwFgwBxATQEigBhAe4IAQDBAJ4IjwDB
+APkAlADBAJwEmACBAdEApAA0AP0IuwA8ACoESgA8ADQE0gA8APMGBgAIACwA8wAIADAA+AApAKsA
+HQMuAAsAnQEuABMApgEuABsAxQEuACMAzgEuACsA9wEuADMA9wEuADsAzgEuAEMA/QEuAEsA9wEu
+AFMAFAIuAFsA9wEuAGMAGgIuAGsARAIuAHMAUQJAAIsA+ABAAIMAmQJDAHsAogJDAIMAmQJJAKsA
+LgNjAHsAogJjAIMAmQJpAKsAQgOAAIsA+ACDAJMA+ACDAJsA+ACDAHsAogKJAKsATwOgAIsA+ACp
+AIMAxQHAAIsA+ADJAIMAxQHgAIsA+ADjALsA+ADjAFMA9wHpALMA+AADAYMAmQIDAaMAuwIjAYMA
+mQIjAVsA9wEgAoMAmQIgAosA+ABAAoMAmQJAAosA+ABgAoMAmQJgAosA+ACAAoMAmQKAAosA+ACg
+AosA+ADAAosA+ADgAosA+ADgAoMAmQIAA4sA+AAgA4sA+AAgA4MAmQKcAK8ABAABAAUABQAGAAcA
+CQAIAAAA2AZ1AQAAwwV6AQAAvgZ/AQAASweEAQAAkgaJAQAAfgGOAQAARwSTAQAA5ACYAQIABAAD
+AAIABQAFAAIABgAHAAIABwAJAAIACQALAAIACgANAAEACwANAAIADgAPAAIAGAARAC4ANQA8AEMA
+oQC0AMMAygAEgAAAAQAAAAAAAAAAAAAAAABNBAAABAAAAAAAAAAAAAAA2ACyAAAAAAAEAAAAAAAA
+AAAAAADYAHUFAAAAAAoAAAAAAAAAAAAAAOEAuwAAAAAADQAAAAAAAAAAAAAA6gCqBAAAAAANAAAA
+AAAAAAAAAADqAGIAAAAAAAAAAAABAAAANQgAAAgABAAJAAQACgAHAAAAEAASAIEAAAAQACsAgQAA
+AAAALQCBAGsAqgBrAM0AAAAAAABTVF8wNjI2M2U2OTQxZWE0M2Y5YjQ5ZmY2YzEzOTExYjE0MQBD
+b250ZXh0VmFsdWVgMQBUaHJlYWRTYWZlT2JqZWN0UHJvdmlkZXJgMQA8TW9kdWxlPgBTeXN0ZW0u
+SU8ATWljcm9zb2Z0LlNxbFNlcnZlci5NYW5hZ2VkRFRTAFQARGlzcG9zZV9fSW5zdGFuY2VfXwBD
+cmVhdGVfX0luc3RhbmNlX18AdmFsdWVfXwBtc2NvcmxpYgBNaWNyb3NvZnQuVmlzdWFsQmFzaWMA
+Q3JlYXRlSW5zdGFuY2UAZ2V0X0dldEluc3RhbmNlAGluc3RhbmNlAEdldEhhc2hDb2RlAFZhcmlh
+YmxlAFJ1bnRpbWVUeXBlSGFuZGxlAEdldFR5cGVGcm9tSGFuZGxlAE1pY3Jvc29mdC5TcWxTZXJ2
+ZXIuRHRzLlJ1bnRpbWUAR2V0VHlwZQBGYWlsdXJlAGdldF9DdWx0dXJlAHNldF9DdWx0dXJlAF9y
+ZXNDdWx0dXJlAFZTVEFSVFNjcmlwdE9iamVjdE1vZGVsQmFzZQBBcHBsaWNhdGlvbkJhc2UAQXBw
+bGljYXRpb25TZXR0aW5nc0Jhc2UARWRpdG9yQnJvd3NhYmxlU3RhdGUAR3VpZEF0dHJpYnV0ZQBI
+ZWxwS2V5d29yZEF0dHJpYnV0ZQBHZW5lcmF0ZWRDb2RlQXR0cmlidXRlAERlYnVnZ2VyTm9uVXNl
+ckNvZGVBdHRyaWJ1dGUARGVidWdnYWJsZUF0dHJpYnV0ZQBFZGl0b3JCcm93c2FibGVBdHRyaWJ1
+dGUAQ29tVmlzaWJsZUF0dHJpYnV0ZQBBc3NlbWJseVRpdGxlQXR0cmlidXRlAFN0YW5kYXJkTW9k
+dWxlQXR0cmlidXRlAEhpZGVNb2R1bGVOYW1lQXR0cmlidXRlAEFzc2VtYmx5VHJhZGVtYXJrQXR0
+cmlidXRlAFRhcmdldEZyYW1ld29ya0F0dHJpYnV0ZQBEZWJ1Z2dlckhpZGRlbkF0dHJpYnV0ZQBB
+c3NlbWJseUZpbGVWZXJzaW9uQXR0cmlidXRlAE15R3JvdXBDb2xsZWN0aW9uQXR0cmlidXRlAEFz
+c2VtYmx5RGVzY3JpcHRpb25BdHRyaWJ1dGUAQ29tcGlsYXRpb25SZWxheGF0aW9uc0F0dHJpYnV0
+ZQBBc3NlbWJseVByb2R1Y3RBdHRyaWJ1dGUAQXNzZW1ibHlDb3B5cmlnaHRBdHRyaWJ1dGUAQ0xT
+Q29tcGxpYW50QXR0cmlidXRlAFNTSVNTY3JpcHRUYXNrRW50cnlQb2ludEF0dHJpYnV0ZQBBc3Nl
+bWJseUNvbXBhbnlBdHRyaWJ1dGUAUnVudGltZUNvbXBhdGliaWxpdHlBdHRyaWJ1dGUAbV9WYWx1
+ZQBnZXRfVmFsdWUAc2V0X1ZhbHVlAEdldE9iamVjdFZhbHVlAFNUX2E2ODczN2JiMWRmYTRkZjQ5
+Yzg5NTUxZWViZDk5OWVmAFN5c3RlbS5UaHJlYWRpbmcAU3lzdGVtLlJ1bnRpbWUuVmVyc2lvbmlu
+ZwBUb1N0cmluZwBNYXRoAE1pY3Jvc29mdC5TcWxTZXJ2ZXIuU2NyaXB0VGFzawBNaWNyb3NvZnQu
+U3FsU2VydmVyLkR0cy5UYXNrcy5TY3JpcHRUYXNrAE1pY3Jvc29mdC5WaXN1YWxCYXNpYy5NeVNl
+cnZpY2VzLkludGVybmFsAFNjcmlwdE9iamVjdE1vZGVsAFN5c3RlbS5Db21wb25lbnRNb2RlbABT
+VF9hNjg3MzdiYjFkZmE0ZGY0OWM4OTU1MWVlYmQ5OTllZi5kbGwAZ2V0X0l0ZW0AU3lzdGVtAEVu
+dW0AQm9vbGVhbgBTeXN0ZW0uQ29tcG9uZW50TW9kZWwuRGVzaWduAFNjcmlwdE1haW4AZ2V0X0Fw
+cGxpY2F0aW9uAE15QXBwbGljYXRpb24AU3lzdGVtLkNvbmZpZ3VyYXRpb24AU3lzdGVtLkdsb2Jh
+bGl6YXRpb24AU3lzdGVtLlJlZmxlY3Rpb24ARmlsZUluZm8AQ3VsdHVyZUluZm8ARGlyZWN0b3J5
+SW5mbwBtX0FwcE9iamVjdFByb3ZpZGVyAG1fVXNlck9iamVjdFByb3ZpZGVyAG1fQ29tcHV0ZXJP
+YmplY3RQcm92aWRlcgBtX015V2ViU2VydmljZXNPYmplY3RQcm92aWRlcgBnZXRfUmVzb3VyY2VN
+YW5hZ2VyAFN5c3RlbS5Db2RlRG9tLkNvbXBpbGVyAGdldF9Vc2VyAEVudGVyAGdldF9Db21wdXRl
+cgBNeUNvbXB1dGVyAF9yZXNNZ3IAQWN0aXZhdG9yAC5jdG9yAC5jY3RvcgBNb25pdG9yAFN5c3Rl
+bS5EaWFnbm9zdGljcwBNaWNyb3NvZnQuVmlzdWFsQmFzaWMuRGV2aWNlcwBnZXRfV2ViU2Vydmlj
+ZXMATXlXZWJTZXJ2aWNlcwBNaWNyb3NvZnQuVmlzdWFsQmFzaWMuQXBwbGljYXRpb25TZXJ2aWNl
+cwBTeXN0ZW0uUnVudGltZS5JbnRlcm9wU2VydmljZXMATWljcm9zb2Z0LlZpc3VhbEJhc2ljLkNv
+bXBpbGVyU2VydmljZXMAU3lzdGVtLlJ1bnRpbWUuQ29tcGlsZXJTZXJ2aWNlcwBTeXN0ZW0uUmVz
+b3VyY2VzAFNUXzA2MjYzZTY5NDFlYTQzZjliNDlmZjZjMTM5MTFiMTQxLk15LlJlc291cmNlcwBN
+eVJlc291cmNlcwBTVF8wNjI2M2U2OTQxZWE0M2Y5YjQ5ZmY2YzEzOTExYjE0MS5SZXNvdXJjZXMu
+cmVzb3VyY2VzAERlYnVnZ2luZ01vZGVzAGdldF9WYXJpYWJsZXMAR2V0RmlsZXMATXlTZXR0aW5n
+cwBFcXVhbHMAUnVudGltZUhlbHBlcnMAU3VjY2VzcwBnZXRfRHRzAFNjcmlwdFJlc3VsdHMAbV9T
+eW5jT2JqZWN0AE15UHJvamVjdABFeGl0AHNldF9UYXNrUmVzdWx0AG1fQ29udGV4dABTVF8wNjI2
+M2U2OTQxZWE0M2Y5YjQ5ZmY2YzEzOTExYjE0MS5NeQBnZXRfQXNzZW1ibHkAAAAxTQB5AC4AUgBl
+AHMAbwB1AHIAYwBlAHMALgBNAHkAUgBlAHMAbwB1AHIAYwBlAHMAAGtcAFwAZABjAHIALQBpAHMA
+aQBsAG8AbgAtADEAXABuAGQAYQB0AGEAMAAwADEAXABEAEEAMgBGAFQAUABcAE0AZQBkAGEAbABs
+AGkAYQBfAEgAZQBhAGwAdABoAFAAWABfAEYAaQBsAGUAASdBAHQAcgBpAHUAbQAgAEgAZQBhAGwA
+dABoAF8AKgAuAGMAcwB2AAApVQBzAGUAcgA6ADoAdgBhAHIASQBzAEYAaQBsAGUARQB4AGkAcwB0
+AAAAAAAiL6/1jOpvQK2SViW11ns8AAQgAQEIAyAAAQUgAQEREQQgAQEOBCABAQIFIAIBDg4FIAEB
+EUUHIAQBDg4ODgYVEiQBEgwGFRIkARIIBhUSJAESZQYVEiQBEiAEIAATAAcAARJtEYCZBSAAEoCd
+ByACAQ4SgJ0EAAEcHAQAAQEcByABHRKArQ4FIAASgLEFIAASgLUGIAESgLkcBCABARwEIAECHAMg
+AAgDIAAOBAcBHgACHgAFEAEAHgAECgEeAAQHARMABhUSJAETAAcGFRJxARMABhUScQETAAITAAQK
+ARMABSABARMACLd6XFYZNOCJCLA/X38R1Qo6CImEXc2AgMyRBAAAAAAEAQAAAAcGFRIkARIMBwYV
+EiQBEggHBhUSJAESZQcGFRIkARIgAwYSeQMGEn0DBhIYAgYcAgYIAwYRKAMAAAEEAAASDAQAABII
+BAAAEmUEAAASIAQAABJ5BAAAEn0FAAEBEn0EAAASGAQgABJtBxABAR4AHgAHMAEBARAeAAQIABIM
+BAgAEggECAASZQQIABIgBAgAEnkECAASfQQIABIYBCgAEwAIAQAIAAAAAAAeAQABAFQCFldyYXBO
+b25FeGNlcHRpb25UaHJvd3MBCAEAAgAAAAAAKAEAI1NUXzA2MjYzZTY5NDFlYTQzZjliNDlmZjZj
+MTM5MTFiMTQxAAAFAQAAAAAWAQARQ29weXJpZ2h0IEAgIDIwMTQAAAUBAAEAACkBACQ4YmYwMjg3
+YS04YTA3LTQ0MWEtOTYzNi0xOTllOTNkYTU3YjYAAAwBAAcxLjAuMC4wAABHAQAaLk5FVEZyYW1l
+d29yayxWZXJzaW9uPXY0LjABAFQOFEZyYW1ld29ya0Rpc3BsYXlOYW1lEC5ORVQgRnJhbWV3b3Jr
+IDQIAQABAAAAAAAYAQAKTXlUZW1wbGF0ZQgxMS4wLjAuMAAAYQEANFN5c3RlbS5XZWIuU2Vydmlj
+ZXMuUHJvdG9jb2xzLlNvYXBIdHRwQ2xpZW50UHJvdG9jb2wSQ3JlYXRlX19JbnN0YW5jZV9fE0Rp
+c3Bvc2VfX0luc3RhbmNlX18AAAAQAQALTXkuQ29tcHV0ZXIAABMBAA5NeS5BcHBsaWNhdGlvbgAA
+DAEAB015LlVzZXIAABMBAA5NeS5XZWJTZXJ2aWNlcwAAALQAAADOyu++AQAAAJEAAABsU3lzdGVt
+LlJlc291cmNlcy5SZXNvdXJjZVJlYWRlciwgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3Vs
+dHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5I1N5c3RlbS5SZXNv
+dXJjZXMuUnVudGltZVJlc291cmNlU2V0AgAAAAAAAAAAAAAAUEFEUEFEULQAAABIOQAAAAAAAAAA
+AABiOQAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVDkAAAAAAAAAAAAAAABfQ29yRGxsTWFpbgBt
+c2NvcmVlLmRsbAAAAAAA/yUAIAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AQAQAAAAGAAAgAAAAAAAAAAAAAAAAAAAAQABAAAAMAAAgAAAAAAAAAAAAAAAAAAAAQAAAAAASAAA
+AFhAAADsAwAAAAAAAAAAAADsAzQAAABWAFMAXwBWAEUAUgBTAEkATwBOAF8ASQBOAEYATwAAAAAA
+vQTv/gAAAQAAAAEAAAAAAAAAAQAAAAAAPwAAAAAAAAAEAAAAAgAAAAAAAAAAAAAAAAAAAEQAAAAB
+AFYAYQByAEYAaQBsAGUASQBuAGYAbwAAAAAAJAAEAAAAVAByAGEAbgBzAGwAYQB0AGkAbwBuAAAA
+AAAAALAETAMAAAEAUwB0AHIAaQBuAGcARgBpAGwAZQBJAG4AZgBvAAAAKAMAAAEAMAAwADAAMAAw
+ADQAYgAwAAAAGgABAAEAQwBvAG0AbQBlAG4AdABzAAAAAAAAACIAAQABAEMAbwBtAHAAYQBuAHkA
+TgBhAG0AZQAAAAAAAAAAAHAAJAABAEYAaQBsAGUARABlAHMAYwByAGkAcAB0AGkAbwBuAAAAAABT
+AFQAXwAwADYAMgA2ADMAZQA2ADkANAAxAGUAYQA0ADMAZgA5AGIANAA5AGYAZgA2AGMAMQAzADkA
+MQAxAGIAMQA0ADEAAAAwAAgAAQBGAGkAbABlAFYAZQByAHMAaQBvAG4AAAAAADEALgAwAC4AMAAu
+ADAAAABwACgAAQBJAG4AdABlAHIAbgBhAGwATgBhAG0AZQAAAFMAVABfAGEANgA4ADcAMwA3AGIA
+YgAxAGQAZgBhADQAZABmADQAOQBjADgAOQA1ADUAMQBlAGUAYgBkADkAOQA5AGUAZgAuAGQAbABs
+AAAASAASAAEATABlAGcAYQBsAEMAbwBwAHkAcgBpAGcAaAB0AAAAQwBvAHAAeQByAGkAZwBoAHQA
+IABAACAAIAAyADAAMQA0AAAAKgABAAEATABlAGcAYQBsAFQAcgBhAGQAZQBtAGEAcgBrAHMAAAAA
+AAAAAAB4ACgAAQBPAHIAaQBnAGkAbgBhAGwARgBpAGwAZQBuAGEAbQBlAAAAUwBUAF8AYQA2ADgA
+NwAzADcAYgBiADEAZABmAGEANABkAGYANAA5AGMAOAA5ADUANQAxAGUAZQBiAGQAOQA5ADkAZQBm
+AC4AZABsAGwAAABoACQAAQBQAHIAbwBkAHUAYwB0AE4AYQBtAGUAAAAAAFMAVABfADAANgAyADYA
+MwBlADYAOQA0ADEAZQBhADQAMwBmADkAYgA0ADkAZgBmADYAYwAxADMAOQAxADEAYgAxADQAMQAA
+ADQACAABAFAAcgBvAGQAdQBjAHQAVgBlAHIAcwBpAG8AbgAAADEALgAwAC4AMAAuADAAAAA4AAgA
+AQBBAHMAcwBlAG0AYgBsAHkAIABWAGUAcgBzAGkAbwBuAAAAMQAuADAALgAwAC4AMAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAMAAAAdDkAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</BinaryItem>
+        </ScriptProject>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\02B - SEND NOTIFICATION EMAIL"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{9A4866CA-973D-45E8-86D0-1B2D4E3054C7}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="02B - SEND NOTIFICATION EMAIL"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{7DA2DDDA-74A9-407D-91C0-E3991561F451}"
+          SQLTask:SqlStatementSource="DECLARE @textHTML  VarChar(1000),&#xA;  @packageName VarChar(100),&#xA;  @varSubject  VarChar(100),&#xA;  @varMachine  VarChar(50),&#xA;  @varUser  VarChar(50),&#xA;  @varEmailProfile VarChar(100),&#xA;  @varRecipients VarChar(500);&#xA;&#xA;&#xA;SET @varRecipients='Harry.McKinnon@carolinashealthcare.org; Mecca.Arnette@carolinashealthcare.org' &#xA;--SET @varRecipients='Lien.Crawford@atriumhealth.org; Michelle.Mathy@carolinashealthcare.org; Jason.Durham@atriumhealth.org' &#xA;SET @packageName= ISNULL(?,'NULL')&#xA;SET @varMachine= ISNULL(?,'NULL')&#xA;SET @varUser= ISNULL(?,'NULL')&#xA;Set @varEmailProfile = ISNULL(?,'NULL')&#xA;SET @varSubject= 'Medallia PX Response File'&#xA;&#xA;SET @textHTML =&#xA;    @varSubject+'&lt;BR&gt;'+&#xA;    'Date Time=' + Convert(varchar(19),getdate(),121)  + '&lt;br&gt;&lt;br&gt;' +&#xA;    'Server=' + @@SERVERNAME+'&lt;BR&gt;'+ &#xA;    'Machine='+@varMachine +'&lt;BR&gt;'+ &#xA;    '&lt;font color=white&gt;User='+@varUser +'&lt;/font&gt;&lt;BR&gt;'+ &#xA;    'Contact Michelle Mathy,.  &lt;br&gt;&#xA; This month file is not in the folder. &lt;br&gt;' &#xA;+&#xA; '&lt;p&gt;\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File&lt;/p&gt;'&#xA; +&#xA; '&lt;p&gt;*** PLEASE DO NOT REPLY TO THIS EMAIL ***&lt;/p&gt;';&#xA;    &#xA;EXEC msdb.dbo.sp_send_dbmail &#xA;@profile_name=@varEmailProfile,&#xA;@recipients=@varRecipients,&#xA;@subject = @varSubject,&#xA;@body = @textHTML,&#xA;@body_format = 'HTML' ;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask">
+          <SQLTask:ParameterBinding
+            SQLTask:ParameterName="0"
+            SQLTask:DtsVariableName="System::PackageName"
+            SQLTask:ParameterDirection="Input"
+            SQLTask:DataType="129"
+            SQLTask:ParameterSize="-1" />
+          <SQLTask:ParameterBinding
+            SQLTask:ParameterName="1"
+            SQLTask:DtsVariableName="System::MachineName"
+            SQLTask:ParameterDirection="Input"
+            SQLTask:DataType="129"
+            SQLTask:ParameterSize="-1" />
+          <SQLTask:ParameterBinding
+            SQLTask:ParameterName="2"
+            SQLTask:DtsVariableName="System::UserName"
+            SQLTask:ParameterDirection="Input"
+            SQLTask:DataType="129"
+            SQLTask:ParameterSize="-1" />
+          <SQLTask:ParameterBinding
+            SQLTask:ParameterName="3"
+            SQLTask:DtsVariableName="$Project::ProjectParamEmailFromProfile"
+            SQLTask:ParameterDirection="Input"
+            SQLTask:DataType="129"
+            SQLTask:ParameterSize="-1" />
+        </SQLTask:SqlTaskData>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\COPY AND MOVE FILE"
+      DTS:CreationName="STOCK:FOREACHLOOP"
+      DTS:Description="Foreach Loop Container"
+      DTS:DTSID="{A3354F46-7D4F-4C50-AAF0-7A86B79D6ACE}"
+      DTS:ExecutableType="STOCK:FOREACHLOOP"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="COPY AND MOVE FILE">
+      <DTS:ForEachEnumerator
+        DTS:CreationName="Microsoft.ForEachFileEnumerator"
+        DTS:DTSID="{417EC619-650A-4264-809B-53108BB9A3E7}"
+        DTS:ObjectName="{B3D2F745-74DB-4C7F-AB8B-5943490DDE21}">
+        <DTS:ObjectData>
+          <ForEachFileEnumeratorProperties>
+            <FEFEProperty
+              Folder="\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File" />
+            <FEFEProperty
+              FileSpec="Atrium Health_*.csv" />
+            <FEFEProperty
+              FileNameRetrievalType="0" />
+            <FEFEProperty
+              Recurse="0" />
+          </ForEachFileEnumeratorProperties>
+        </DTS:ObjectData>
+      </DTS:ForEachEnumerator>
+      <DTS:Variables />
+      <DTS:Executables>
+        <DTS:Executable
+          DTS:refId="Package\COPY AND MOVE FILE\02A - COPY FILE TO INBOUND"
+          DTS:CreationName="Microsoft.FileSystemTask"
+          DTS:DelayValidation="True"
+          DTS:Description="File System Task"
+          DTS:DTSID="{10319275-E070-4F0C-B6BE-5E356FF09564}"
+          DTS:ExecutableType="Microsoft.FileSystemTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="02A - COPY FILE TO INBOUND"
+          DTS:TaskContact="File System Task;Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <FileSystemData
+              TaskOverwriteDestFile="True"
+              TaskSourcePath="User::varFileToCopy"
+              TaskIsSourceVariable="True"
+              TaskDestinationPath="User::varFilePath"
+              TaskIsDestinationVariable="True" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG"
+          DTS:CreationName="Microsoft.Pipeline"
+          DTS:DelayValidation="True"
+          DTS:Description="Data Flow Task"
+          DTS:DTSID="{02F6C83E-7E71-40BB-B498-268AA94AACCA}"
+          DTS:ExecutableType="Microsoft.Pipeline"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="LOAD MEDALLIA_PX_RESPONSE_STG"
+          DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <pipeline
+              version="1">
+              <components>
+                <component
+                  refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion"
+                  componentClassID="Microsoft.DataConvert"
+                  contactInfo="Data Conversion;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+                  description="Data Conversion"
+                  name="Data Conversion"
+                  usesDispositions="true">
+                  <inputs>
+                    <input
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Inputs[Data Conversion Input]"
+                      name="Data Conversion Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Inputs[Data Conversion Input].Columns[surveyid]"
+                          cachedCodepage="1252"
+                          cachedDataType="str"
+                          cachedLength="50"
+                          cachedName="surveyid"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[surveyid]" />
+                      </inputColumns>
+                      <externalMetadataColumns />
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Output]"
+                      exclusionGroup="1"
+                      name="Data Conversion Output"
+                      synchronousInputId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Inputs[Data Conversion Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of surveyid]"
+                          dataType="i4"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of surveyid]"
+                          name="Copy of surveyid"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.Int32"
+                              description="Specifies the input column used as the source of data for the conversion."
+                              name="SourceInputColumnLineageID">#{Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[surveyid]}</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                          </properties>
+                        </outputColumn>
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="Data Conversion Error Output"
+                      synchronousInputId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Inputs[Data Conversion Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column"
+                  componentClassID="Microsoft.DerivedColumn"
+                  contactInfo="Derived Column;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+                  description="Creates new column values by applying expressions to transformation input columns. Create new columns or overwrite existing ones. For example, concatenate the values from the 'first name' and 'last name' column to make a 'full name' column."
+                  name="Derived Column"
+                  usesDispositions="true">
+                  <inputs>
+                    <input
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Inputs[Derived Column Input]"
+                      description="Input to the Derived Column Transformation"
+                      name="Derived Column Input">
+                      <externalMetadataColumns />
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Output]"
+                      description="Default Output of the Derived Column Transformation"
+                      exclusionGroup="1"
+                      name="Derived Column Output"
+                      synchronousInputId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Inputs[Derived Column Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Output].Columns[LOAD_DT]"
+                          dataType="dbTimeStamp"
+                          errorOrTruncationOperation="Computation"
+                          errorRowDisposition="FailComponent"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Output].Columns[LOAD_DT]"
+                          name="LOAD_DT"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              containsID="true"
+                              dataType="System.String"
+                              description="Derived Column Expression"
+                              name="Expression">[GETDATE]()</property>
+                            <property
+                              containsID="true"
+                              dataType="System.String"
+                              description="Derived Column Friendly Expression"
+                              expressionType="Notify"
+                              name="FriendlyExpression">GETDATE()</property>
+                          </properties>
+                        </outputColumn>
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                    <output
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Error Output]"
+                      description="Error Output of the Derived Column Transformation"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="Derived Column Error Output"
+                      synchronousInputId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Inputs[Derived Column Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source"
+                  componentClassID="Microsoft.FlatFileSource"
+                  contactInfo="Flat File Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;1"
+                  description="Flat File Source"
+                  localeId="1033"
+                  name="Flat File Source"
+                  usesDispositions="true"
+                  version="1">
+                  <properties>
+                    <property
+                      dataType="System.Boolean"
+                      description="Specifies whether zero-length columns are treated as null."
+                      name="RetainNulls">false</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the name of an output column containing the file name. If no name is specified, no output column containing the file name will be generated."
+                      name="FileNameColumnName"></property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Connections[FlatFileConnection]"
+                      connectionManagerID="Package.ConnectionManagers[Flat File Connection Manager]"
+                      connectionManagerRefId="Package.ConnectionManagers[Flat File Connection Manager]"
+                      name="FlatFileConnection" />
+                  </connections>
+                  <outputs>
+                    <output
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output]"
+                      name="Flat File Source Output">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[surveyid]"
+                          codePage="1252"
+                          dataType="str"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[surveyid]"
+                          length="50"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[surveyid]"
+                          name="surveyid"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the data is in binary format."
+                              name="UseBinaryFormat">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[Program Name]"
+                          codePage="1252"
+                          dataType="str"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[Program Name]"
+                          length="50"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[Program Name]"
+                          name="Program Name"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the data is in binary format."
+                              name="UseBinaryFormat">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[question_id]"
+                          codePage="1252"
+                          dataType="str"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[question_id]"
+                          length="50"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[question_id]"
+                          name="question_id"
+                          truncationRowDisposition="IgnoreFailure">
+                          <properties>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the data is in binary format."
+                              name="UseBinaryFormat">false</property>
+                          </properties>
+                        </outputColumn>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[answer_txt]"
+                          codePage="1252"
+                          dataType="str"
+                          errorOrTruncationOperation="Conversion"
+                          errorRowDisposition="FailComponent"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[answer_txt]"
+                          length="50"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[answer_txt]"
+                          name="answer_txt"
+                          truncationRowDisposition="FailComponent">
+                          <properties>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the column uses the faster, locale-neutral parsing routines."
+                              name="FastParse">false</property>
+                            <property
+                              dataType="System.Boolean"
+                              description="Indicates whether the data is in binary format."
+                              name="UseBinaryFormat">false</property>
+                          </properties>
+                        </outputColumn>
+                      </outputColumns>
+                      <externalMetadataColumns
+                        isUsed="True">
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[surveyid]"
+                          codePage="1252"
+                          dataType="str"
+                          length="50"
+                          name="surveyid" />
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[Program Name]"
+                          codePage="1252"
+                          dataType="str"
+                          length="50"
+                          name="Program Name" />
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[question_id]"
+                          codePage="1252"
+                          dataType="str"
+                          length="50"
+                          name="question_id" />
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].ExternalColumns[answer_txt]"
+                          codePage="1252"
+                          dataType="str"
+                          length="50"
+                          name="answer_txt" />
+                      </externalMetadataColumns>
+                    </output>
+                    <output
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Error Output]"
+                      isErrorOut="true"
+                      name="Flat File Source Error Output">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Error Output].Columns[Flat File Source Error Output Column]"
+                          codePage="1252"
+                          dataType="text"
+                          description="Flat File Source Error Output Column"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Error Output].Columns[Flat File Source Error Output Column]"
+                          name="Flat File Source Error Output Column" />
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+                <component
+                  refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination"
+                  componentClassID="Microsoft.OLEDBDestination"
+                  contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+                  description="OLE DB Destination"
+                  name="OLE DB Destination"
+                  usesDispositions="true"
+                  version="4">
+                  <properties>
+                    <property
+                      dataType="System.Int32"
+                      description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                      name="CommandTimeout">0</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the name of the database object used to open a rowset."
+                      name="OpenRowset">"ADMIN"."MEDALLIA_PX_RESPONSE_STG"</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies the variable that contains the name of the database object used to open a rowset."
+                      name="OpenRowsetVariable"></property>
+                    <property
+                      dataType="System.String"
+                      description="The SQL command to be executed."
+                      name="SqlCommand"
+                      UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=16.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the column code page to use when code page information is unavailable from the data source."
+                      name="DefaultCodePage">1252</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Forces the use of the DefaultCodePage property value when describing character data."
+                      name="AlwaysUseDefaultCodePage">true</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies the mode used to access the database."
+                      name="AccessMode"
+                      typeConverter="AccessMode">3</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                      name="FastLoadKeepIdentity">false</property>
+                    <property
+                      dataType="System.Boolean"
+                      description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                      name="FastLoadKeepNulls">false</property>
+                    <property
+                      dataType="System.String"
+                      description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                      name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                    <property
+                      dataType="System.Int32"
+                      description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                      name="FastLoadMaxInsertCommitSize">2147483647</property>
+                  </properties>
+                  <connections>
+                    <connection
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Connections[OleDbConnection]"
+                      connectionManagerID="{28d9ef79-3167-4899-bb24-f4cfc4529a67}:external"
+                      connectionManagerRefId="Project.ConnectionManagers[ANALYTICSP_Deploy]"
+                      description="The OLE DB runtime connection used to access the database."
+                      name="OleDbConnection" />
+                  </connections>
+                  <inputs>
+                    <input
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input]"
+                      errorOrTruncationOperation="Insert"
+                      errorRowDisposition="FailComponent"
+                      hasSideEffects="true"
+                      name="OLE DB Destination Input">
+                      <inputColumns>
+                        <inputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[question_id]"
+                          cachedCodepage="1252"
+                          cachedDataType="str"
+                          cachedLength="50"
+                          cachedName="question_id"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[QUESTION_ID]"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[question_id]" />
+                        <inputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[answer_txt]"
+                          cachedCodepage="1252"
+                          cachedDataType="str"
+                          cachedLength="50"
+                          cachedName="answer_txt"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[ANSWER_TXT]"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[answer_txt]" />
+                        <inputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[LOAD_DT]"
+                          cachedDataType="dbTimeStamp"
+                          cachedName="LOAD_DT"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[LOAD_DT]"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Output].Columns[LOAD_DT]" />
+                        <inputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Copy of surveyid]"
+                          cachedDataType="i4"
+                          cachedName="Copy of surveyid"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[SURVEY_ID]"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Output].Columns[Copy of surveyid]" />
+                        <inputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[Program Name]"
+                          cachedCodepage="1252"
+                          cachedDataType="str"
+                          cachedLength="50"
+                          cachedName="Program Name"
+                          externalMetadataColumnId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[PRGRM_NM]"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output].Columns[Program Name]" />
+                      </inputColumns>
+                      <externalMetadataColumns
+                        isUsed="True">
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[SURVEY_ID]"
+                          dataType="i4"
+                          name="SURVEY_ID" />
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[PRGRM_NM]"
+                          codePage="1252"
+                          dataType="str"
+                          length="250"
+                          name="PRGRM_NM" />
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[QUESTION_ID]"
+                          codePage="1252"
+                          dataType="str"
+                          length="250"
+                          name="QUESTION_ID" />
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[ANSWER_TXT]"
+                          codePage="1252"
+                          dataType="str"
+                          length="250"
+                          name="ANSWER_TXT" />
+                        <externalMetadataColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[LOAD_DT]"
+                          dataType="dbTimeStamp"
+                          name="LOAD_DT" />
+                      </externalMetadataColumns>
+                    </input>
+                  </inputs>
+                  <outputs>
+                    <output
+                      refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Outputs[OLE DB Destination Error Output]"
+                      exclusionGroup="1"
+                      isErrorOut="true"
+                      name="OLE DB Destination Error Output"
+                      synchronousInputId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input]">
+                      <outputColumns>
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                          name="ErrorCode"
+                          specialFlags="1" />
+                        <outputColumn
+                          refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                          dataType="i4"
+                          lineageId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                          name="ErrorColumn"
+                          specialFlags="2" />
+                      </outputColumns>
+                      <externalMetadataColumns />
+                    </output>
+                  </outputs>
+                </component>
+              </components>
+              <paths>
+                <path
+                  refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG.Paths[Data Conversion Output]"
+                  endId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Inputs[Derived Column Input]"
+                  name="Data Conversion Output"
+                  startId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Outputs[Data Conversion Output]" />
+                <path
+                  refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG.Paths[Derived Column Output]"
+                  endId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination.Inputs[OLE DB Destination Input]"
+                  name="Derived Column Output"
+                  startId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column.Outputs[Derived Column Output]" />
+                <path
+                  refId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG.Paths[Flat File Source Output]"
+                  endId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion.Inputs[Data Conversion Input]"
+                  name="Flat File Source Output"
+                  startId="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source.Outputs[Flat File Source Output]" />
+              </paths>
+            </pipeline>
+          </DTS:ObjectData>
+        </DTS:Executable>
+      </DTS:Executables>
+      <DTS:PrecedenceConstraints>
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\COPY AND MOVE FILE.PrecedenceConstraints[Constraint]"
+          DTS:CreationName=""
+          DTS:DTSID="{F2BA1AAC-B792-4834-803C-CA2FE1A772E1}"
+          DTS:From="Package\COPY AND MOVE FILE\02A - COPY FILE TO INBOUND"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint"
+          DTS:To="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG" />
+      </DTS:PrecedenceConstraints>
+      <DTS:ForEachVariableMappings>
+        <DTS:ForEachVariableMapping
+          DTS:CreationName=""
+          DTS:DTSID="{93C58D0F-85C7-4ABD-9980-A9234B8FC829}"
+          DTS:ObjectName="{93C58D0F-85C7-4ABD-9980-A9234B8FC829}"
+          DTS:ValueIndex="0"
+          DTS:VariableName="User::varFileToCopy" />
+      </DTS:ForEachVariableMappings>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\LOAD FILE"
+      DTS:CreationName="STOCK:SEQUENCE"
+      DTS:Description="Sequence Container"
+      DTS:DTSID="{FDDFCF38-8027-471E-9371-B14FEBA2D879}"
+      DTS:ExecutableType="STOCK:SEQUENCE"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="LOAD FILE">
+      <DTS:Variables />
+      <DTS:Executables>
+        <DTS:Executable
+          DTS:refId="Package\LOAD FILE\LOAD MEDALLIA_PX_RESPONSE"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{095AAFF6-1740-427A-BB1F-8644FFBD9562}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="LOAD MEDALLIA_PX_RESPONSE"
+          DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{28d9ef79-3167-4899-bb24-f4cfc4529a67}"
+              SQLTask:SqlStatementSource="INSERT INTO MEDALLIA_PX_RESPONSE&#xA;SELECT * FROM MEDALLIA_PX_RESPONSE_STG&#xA;WHERE SURVEY_ID || QUESTION_ID NOT IN (SELECT SURVEY_ID || QUESTION_ID FROM MEDALLIA_PX_RESPONSE);" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\LOAD FILE\LOAD_MEDALLIA_PX_RESPONSE_HRZN_CC"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{559C9289-0FCF-4948-9E6B-AE87EBD5E6C2}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="LOAD_MEDALLIA_PX_RESPONSE_HRZN_CC"
+          DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{28d9ef79-3167-4899-bb24-f4cfc4529a67}"
+              SQLTask:SqlStatementSource="EXEC SP_OPERATIONAL_LOAD_MEDALLIA_PX_CC();" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\LOAD FILE\LOG JOB RUN"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{05B04154-14D6-4E53-8CFE-A36AFA620126}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="LOG JOB RUN"
+          DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{7DA2DDDA-74A9-407D-91C0-E3991561F451}"
+              SQLTask:SqlStatementSource="INSERT INTO JOB_RUN&#xA;SELECT ?, GETDATE()" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask">
+              <SQLTask:ParameterBinding
+                SQLTask:ParameterName="0"
+                SQLTask:DtsVariableName="User::varJobNm"
+                SQLTask:ParameterDirection="Input"
+                SQLTask:DataType="129"
+                SQLTask:ParameterSize="-1" />
+            </SQLTask:SqlTaskData>
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\LOAD FILE\SP_MEDALLIA_LOAD_DETAIL_CC"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{468C17BD-EDE5-4733-AA18-5FE0A384FFCC}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="SP_MEDALLIA_LOAD_DETAIL_CC"
+          DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{28d9ef79-3167-4899-bb24-f4cfc4529a67}"
+              SQLTask:SqlStatementSource="EXEC SP_MEDALLIA_LOAD_DETAIL_CC();" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+        <DTS:Executable
+          DTS:refId="Package\LOAD FILE\SP_MEDALLIA_LOAD_SL_METRIC"
+          DTS:CreationName="Microsoft.ExecuteSQLTask"
+          DTS:Description="Execute SQL Task"
+          DTS:DTSID="{8978AEF0-2342-4D8D-B819-4BF66EB1A7DB}"
+          DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="SP_MEDALLIA_LOAD_SL_METRIC"
+          DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <SQLTask:SqlTaskData
+              SQLTask:Connection="{28d9ef79-3167-4899-bb24-f4cfc4529a67}"
+              SQLTask:SqlStatementSource="EXEC SP_MEDALLIA_LOAD_SL_METRIC_CC();" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+      </DTS:Executables>
+      <DTS:PrecedenceConstraints>
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\LOAD FILE.PrecedenceConstraints[Constraint]"
+          DTS:CreationName=""
+          DTS:DTSID="{157C590D-1D59-43F5-A5C4-13B663A120AB}"
+          DTS:From="Package\LOAD FILE\LOAD MEDALLIA_PX_RESPONSE"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint"
+          DTS:To="Package\LOAD FILE\LOAD_MEDALLIA_PX_RESPONSE_HRZN_CC" />
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\LOAD FILE.PrecedenceConstraints[Constraint 1]"
+          DTS:CreationName=""
+          DTS:DTSID="{2C89D646-EA70-4305-AEBF-9A08CD98EA84}"
+          DTS:From="Package\LOAD FILE\LOAD_MEDALLIA_PX_RESPONSE_HRZN_CC"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint 1"
+          DTS:To="Package\LOAD FILE\SP_MEDALLIA_LOAD_DETAIL_CC" />
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\LOAD FILE.PrecedenceConstraints[Constraint 2]"
+          DTS:CreationName=""
+          DTS:DTSID="{72C93FCA-EE71-4A25-89CC-A84A2637FBE2}"
+          DTS:From="Package\LOAD FILE\SP_MEDALLIA_LOAD_DETAIL_CC"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint 2"
+          DTS:To="Package\LOAD FILE\SP_MEDALLIA_LOAD_SL_METRIC" />
+        <DTS:PrecedenceConstraint
+          DTS:refId="Package\LOAD FILE.PrecedenceConstraints[Constraint 3]"
+          DTS:CreationName=""
+          DTS:DTSID="{ED2F9C11-6C25-4C0D-9BB7-5082A45A37B7}"
+          DTS:From="Package\LOAD FILE\SP_MEDALLIA_LOAD_SL_METRIC"
+          DTS:LogicalAnd="True"
+          DTS:ObjectName="Constraint 3"
+          DTS:To="Package\LOAD FILE\LOG JOB RUN" />
+      </DTS:PrecedenceConstraints>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\MOVE FILE TO ARCHIVE"
+      DTS:CreationName="STOCK:FOREACHLOOP"
+      DTS:Description="Foreach Loop Container"
+      DTS:DTSID="{BAD62893-72D1-4501-B4B8-9869EFD47CCC}"
+      DTS:ExecutableType="STOCK:FOREACHLOOP"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="MOVE FILE TO ARCHIVE">
+      <DTS:ForEachEnumerator
+        DTS:CreationName="Microsoft.ForEachFileEnumerator"
+        DTS:DTSID="{8867D632-ADEC-4EBE-AB63-AEF248507367}"
+        DTS:ObjectName="{8867D632-ADEC-4EBE-AB63-AEF248507367}">
+        <DTS:ObjectData>
+          <ForEachFileEnumeratorProperties>
+            <FEFEProperty
+              Folder="\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File" />
+            <FEFEProperty
+              FileSpec="Atrium Health_*.csv" />
+            <FEFEProperty
+              FileNameRetrievalType="0" />
+            <FEFEProperty
+              Recurse="0" />
+          </ForEachFileEnumeratorProperties>
+        </DTS:ObjectData>
+      </DTS:ForEachEnumerator>
+      <DTS:Variables />
+      <DTS:Executables>
+        <DTS:Executable
+          DTS:refId="Package\MOVE FILE TO ARCHIVE\MOVE FILE TO ARCHIVE FOLDER"
+          DTS:CreationName="Microsoft.FileSystemTask"
+          DTS:Description="File System Task"
+          DTS:DTSID="{E03EEE7D-9384-4BF3-823C-7F415E5D8E35}"
+          DTS:ExecutableType="Microsoft.FileSystemTask"
+          DTS:LocaleID="-1"
+          DTS:ObjectName="MOVE FILE TO ARCHIVE FOLDER"
+          DTS:TaskContact="File System Task;Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+          DTS:ThreadHint="0">
+          <DTS:Variables />
+          <DTS:ObjectData>
+            <FileSystemData
+              TaskOperationType="MoveFile"
+              TaskOverwriteDestFile="True"
+              TaskSourcePath="User::varFileToCopy"
+              TaskIsSourceVariable="True"
+              TaskDestinationPath="User::varFileArchive"
+              TaskIsDestinationVariable="True" />
+          </DTS:ObjectData>
+        </DTS:Executable>
+      </DTS:Executables>
+      <DTS:ForEachVariableMappings>
+        <DTS:ForEachVariableMapping
+          DTS:CreationName=""
+          DTS:DTSID="{714255D9-374E-4AA8-AF18-06B914A1AC18}"
+          DTS:ObjectName="{714255D9-374E-4AA8-AF18-06B914A1AC18}"
+          DTS:ValueIndex="0"
+          DTS:VariableName="User::varFileToCopy" />
+      </DTS:ForEachVariableMappings>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\TRUNC MEDALLIA_PX_RESPONSE_STG"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{913AF519-867B-4597-B906-531E7DE4B2E8}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="TRUNC MEDALLIA_PX_RESPONSE_STG"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{28d9ef79-3167-4899-bb24-f4cfc4529a67}"
+          SQLTask:SqlStatementSource="TRUNCATE TABLE MEDALLIA_PX_RESPONSE_STG;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{3144AFA5-0B92-42BB-B171-1DDDDCB95497}"
+      DTS:EvalOp="1"
+      DTS:Expression="@[User::varIsFileExist] ==True"
+      DTS:From="Package\01 - CHECK FOR FILE EXISTENCE"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\TRUNC MEDALLIA_PX_RESPONSE_STG" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 1]"
+      DTS:CreationName=""
+      DTS:DTSID="{525EE331-FE47-486A-88C1-C514969E5307}"
+      DTS:EvalOp="1"
+      DTS:Expression="@[User::varIsFileExist] ==False"
+      DTS:From="Package\01 - CHECK FOR FILE EXISTENCE"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 1"
+      DTS:To="Package\02B - SEND NOTIFICATION EMAIL" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 2]"
+      DTS:CreationName=""
+      DTS:DTSID="{9A190311-A07F-4424-963E-32B3D2C92AF6}"
+      DTS:From="Package\TRUNC MEDALLIA_PX_RESPONSE_STG"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 2"
+      DTS:To="Package\COPY AND MOVE FILE" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 3]"
+      DTS:CreationName=""
+      DTS:DTSID="{ADC5A992-2C99-4F87-B3FD-A06CC621B9CF}"
+      DTS:From="Package\COPY AND MOVE FILE"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 3"
+      DTS:To="Package\LOAD FILE" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 4]"
+      DTS:CreationName=""
+      DTS:DTSID="{149D4197-7FFC-4050-A595-042BCDAF4636}"
+      DTS:From="Package\LOAD FILE"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 4"
+      DTS:To="Package\MOVE FILE TO ARCHIVE" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="32" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mssgm="clr-namespace:Microsoft.SqlServer.Graph.Model;assembly=Microsoft.SqlServer.Graph">
+        <NodeLayout
+          Size="238.666666666667,42"
+          Id="Package\01 - CHECK FOR FILE EXISTENCE"
+          TopLeft="148,113" />
+        <NodeLayout
+          Size="242.666666666667,42"
+          Id="Package\02B - SEND NOTIFICATION EMAIL"
+          TopLeft="438,110" />
+        <NodeLayout
+          Size="225.333333333334,42"
+          Id="Package\COPY AND MOVE FILE\02A - COPY FILE TO INBOUND"
+          TopLeft="29,36" />
+        <NodeLayout
+          Size="234.666666666667,42"
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG"
+          TopLeft="30,122" />
+        <EdgeLayout
+          Id="Package\COPY AND MOVE FILE.PrecedenceConstraints[Constraint]"
+          TopLeft="144.5,78">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,44"
+              Start="0,0"
+              End="0,36.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,36.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <ContainerLayout
+          HeaderHeight="43"
+          IsExpanded="True"
+          PanelSize="314.666666666667,194"
+          Size="314.666666666667,237.333333333334"
+          Id="Package\COPY AND MOVE FILE"
+          TopLeft="123,292" />
+        <NodeLayout
+          Size="242.666666666667,42"
+          Id="Package\LOAD FILE\LOAD MEDALLIA_PX_RESPONSE"
+          TopLeft="33,29" />
+        <NodeLayout
+          Size="286,42"
+          Id="Package\LOAD FILE\LOAD_MEDALLIA_PX_RESPONSE_HRZN_CC"
+          TopLeft="31,122" />
+        <NodeLayout
+          Size="145.333333333334,42.6666666666667"
+          Id="Package\LOAD FILE\LOG JOB RUN"
+          TopLeft="81,348" />
+        <NodeLayout
+          Size="237.333333333334,42"
+          Id="Package\LOAD FILE\SP_MEDALLIA_LOAD_DETAIL_CC"
+          TopLeft="49,198" />
+        <NodeLayout
+          Size="246,42"
+          Id="Package\LOAD FILE\SP_MEDALLIA_LOAD_SL_METRIC"
+          TopLeft="32,273" />
+        <EdgeLayout
+          Id="Package\LOAD FILE.PrecedenceConstraints[Constraint]"
+          TopLeft="154.5,71">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="19.5,51"
+              Start="0,0"
+              End="19.5,43.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,21.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,21.5"
+                    Point2="0,25.5"
+                    Point3="4,25.5" />
+                  <mssgle:LineSegment
+                    End="15.5,25.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="15.5,25.5"
+                    Point2="19.5,25.5"
+                    Point3="19.5,29.5" />
+                  <mssgle:LineSegment
+                    End="19.5,43.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\LOAD FILE.PrecedenceConstraints[Constraint 1]"
+          TopLeft="170.75,164">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,34"
+              Start="0,0"
+              End="0,26.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,26.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\LOAD FILE.PrecedenceConstraints[Constraint 2]"
+          TopLeft="167.5,240">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-12.5,33"
+              Start="0,0"
+              End="-12.5,25.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,12.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,12.5"
+                    Point2="0,16.5"
+                    Point3="-4,16.5" />
+                  <mssgle:LineSegment
+                    End="-8.5,16.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-8.5,16.5"
+                    Point2="-12.5,16.5"
+                    Point3="-12.5,20.5" />
+                  <mssgle:LineSegment
+                    End="-12.5,25.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\LOAD FILE.PrecedenceConstraints[Constraint 3]"
+          TopLeft="154.333333333333,315">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,33"
+              Start="0,0"
+              End="0,25.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,25.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <ContainerLayout
+          HeaderHeight="43"
+          IsExpanded="True"
+          PanelSize="332,445.333333333334"
+          Size="332,488"
+          Id="Package\LOAD FILE"
+          TopLeft="556,160" />
+        <NodeLayout
+          Size="236,42"
+          Id="Package\MOVE FILE TO ARCHIVE\MOVE FILE TO ARCHIVE FOLDER"
+          TopLeft="17,35" />
+        <ContainerLayout
+          HeaderHeight="43"
+          IsExpanded="True"
+          PanelSize="270.666666666667,132"
+          Size="270.666666666667,174.666666666667"
+          Id="Package\MOVE FILE TO ARCHIVE"
+          TopLeft="989,315" />
+        <NodeLayout
+          Size="262.666666666667,42"
+          Id="Package\TRUNC MEDALLIA_PX_RESPONSE_STG"
+          TopLeft="143,201" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="271,155">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,46"
+              Start="0,0"
+              End="0,38.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,38.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="-8,11.25,16,16"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 1]"
+          TopLeft="387,132.5">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="51,0"
+              Start="0,0"
+              End="43.5,0">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="43.5,0" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <mssgm:EdgeLabel
+              BoundingBox="13.75,5,16,16"
+              RelativePosition="Any" />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 2]"
+          TopLeft="277.5,243">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,49"
+              Start="0,0"
+              End="0,41.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,41.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 3]"
+          TopLeft="438,407.25">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="118,0"
+              Start="0,0"
+              End="110.5,0">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="110.5,0" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 4]"
+          TopLeft="888,403.25">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="101,0"
+              Start="0,0"
+              End="93.5,0">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="93.5,0" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <AnnotationLayout
+          Text="&#xA;\\dcr-isilon-1\ndata001\DA2FTP\Medallia_HealthPX_File&#xA;Atrium Health_responses_2020-04-06_13_15_03.csv&#xA;Contact person: Spencer Kirkman"
+          ParentId="Package"
+          FontInfo="{assembly:Null}"
+          Size="324,88"
+          Id="22bc1c7b-6791-4e42-9b77-d04012b372b3"
+          TopLeft="52,14" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="153,42"
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Derived Column"
+          TopLeft="253,215" />
+        <NodeLayout
+          Size="170,42"
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination"
+          TopLeft="248,294" />
+        <NodeLayout
+          Size="155,42"
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Data Conversion"
+          TopLeft="252,138" />
+        <NodeLayout
+          Size="150,42"
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\Flat File Source"
+          TopLeft="252,61" />
+        <EdgeLayout
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG.Paths[Flat File Source Output]"
+          TopLeft="328.25,103">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,35"
+              Start="0,0"
+              End="0,27.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,27.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG.Paths[Derived Column Output]"
+          TopLeft="331.25,257">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,37"
+              Start="0,0"
+              End="0,29.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,29.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG.Paths[Data Conversion Output]"
+          TopLeft="329.5,180">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,35"
+              Start="0,0"
+              End="0,27.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,27.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\COPY AND MOVE FILE\LOAD MEDALLIA_PX_RESPONSE_STG\OLE DB Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
