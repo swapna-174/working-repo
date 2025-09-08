@@ -1,36 +1,3 @@
-using System;
-using System.IO;
-using System.Text;
-using Microsoft.SqlServer.Dts.Runtime;
-
-public void Main()
-{
-    // SSIS variables
-    string outPath = (string)Dts.Variables["User::OutPath"].Value;  // e.g., C:\\Reports\\report.html
-    string title   = (string)Dts.Variables["User::Title"].Value;
-    string runDate = (string)Dts.Variables["User::RunDate"].Value;
-
-    // Simple HTML (replace with your template if you have one)
-    string html = $@"
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset=""utf-8"">
-  <title>{title}</title>
-  <style>
-    body {{ font-family: Arial, sans-serif; }}
-    .badge {{ background:#efefef; padding:6px 10px; border-radius:6px; display:inline-block; }}
-  </style>
-</head>
-<body>
-  <h1>{title}</h1>
-  <p class=""badge"">Generated: {runDate}</p>
-  <p>Replace this with your report content…</p>
-</body>
-</html>";
-
-    Directory.CreateDirectory(Path.GetDirectoryName(outPath) ?? ".");
-    File.WriteAllText(outPath, html, Encoding.UTF8);
-
-    Dts.TaskResult = (int)ScriptResults.Success;
-}
+<DebugOptions>
+  <Run64BitRuntime>False</Run64BitRuntime>
+</DebugOptions>
