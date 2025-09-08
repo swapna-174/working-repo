@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="Caboodle EDW"
+  DTS:DTSID="{D6E3F64D-D8D6-4CE3-8524-F0EF54A17CF4}"
+  DTS:CreationName="OLEDB">
+  <DTS:PropertyExpression
+    DTS:Name="InitialCatalog">@[$Project::PRJ_VAR_DATABASE_NAME]</DTS:PropertyExpression>
+  <DTS:PropertyExpression
+    DTS:Name="ServerName">@[$Project::PRJ_VAR_DATABASE_SERVER]</DTS:PropertyExpression>
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectRetryCount="1"
+      DTS:ConnectRetryInterval="5"
+      DTS:ConnectionString="Data Source=nonprd-cdw.et1361.epichosted.com;Initial Catalog=POC_CDW;Provider=MSOLEDBSQL.1;Integrated Security=SSPI;Application Name=SSIS-{D6E3F64D-D8D6-4CE3-8524-F0EF54A17CF4}CNCTN_DB_NAME;" />
+  </DTS:ObjectData>
+</DTS:ConnectionManager>
