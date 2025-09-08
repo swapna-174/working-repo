@@ -1,3 +1,4 @@
 <DebugOptions>
   <Run64BitRuntime>False</Run64BitRuntime>
 </DebugOptions>
+<DebugOptions Run64BitRuntime="False" />
