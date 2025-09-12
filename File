@@ -1,2 +1,92 @@
-"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + @[User::OutFile] +
-";Extended Properties=\"Excel 12.0 Xml;HDR=YES;IMEX=1\";"
+USE [POC_CDW]
+GO
+
+/****** Object:  StoredProcedure [NHX].[Concard_DischargeFaxByRevlocandPayor_SP]    Script Date: 9/12/2025 2:14:46 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+/* Copyright 2025 NorthWell
+********************************************************************************************************************************
+** [NHX].[Concard_DischargeFaxByRevlocandPayor_SP]
+********************************************************************************************************************************
+ PURPOSE:   This procedure send Discharge Information based of the Rev and Payor info from Config table
+ AUTHOR:    Swapna B
+ DATABASE:  CDW
+ SCHEMA:   
+ FREQUENCY: 
+ CUSTOMER:  
+
+ EXECUTE: [NHX].[Concard_DischargeFaxByRevlocandPayor_SP] REV_Loc,Payor
+
+ Execute Example: 
+       exec [NHX].[Concard_DischargeFaxByRevlocandPayor_SP]  '100001','"Aetna","Aetna Alt Payer","Aetna Medicare","Christian Brothers","Coresource"',''
+
+
+ INPUT PARAMETERS:
+   REV_Loc,Payor Details
+********************************************************************************************************************************
+ CHANGE HISTORY:
+ 
+ DATE        AUTHOR            DESCRIPTION OF CHANGES
+ ----        ------            ----------------------
+ 08/28/2025  Swapna B        New Procedure 
+ 
+*********************************************************************************************************************************/
+ALTER      PROCEDURE [NHX].[Concard_DischargeFaxByRevlocandPayor_SP]
+
+@LocationEpicId  nvarchar(max),
+@PayorName nvarchar(max),
+@BenefitplanName nvarchar(max),
+@CensusDate DATE = NULL -- Date
+AS
+BEGIN
+    SET @CensusDate = ISNULL(@CensusDate, GETDATE() - 1); -- Default to yesterday if not provided
+    DECLARE @CensusDateKey INT = CONVERT(INT, FORMAT(@CensusDate, 'yyyyMMdd'));
+
+
+        -- Truncate statement
+truncate table nhx.DischargeRevLocationByPayorData
+;With pop as (
+SELECT Distinct EncounterKey, ptClass.Abbreviation PatientClass, evnt.DepartmentKey, evnt.BedKey
+FROM NHX.ADTEventFactX evnt
+INNER JOIN CategoryDim evnttype				ON evnt.EventTypeCategoryKey = evnttype.CategoryKey
+INNER JOIN CategoryDim subtype				ON evnt.EventSubtypeCategoryKey = subtype.CategoryKey
+INNER JOIN CategoryDim ptclass				ON evnt.PatientClassCategoryKey = ptclass.CategoryKey
+WHERE 1 = 1
+AND evnttype.EpicCategoryValueId = 2 --Discharge Event
+AND subtype.EpicCategoryValueId <> 2 --Not Deleted
+---AND evnt.EffectiveDateKey >= CONVERT(INT, FORMAT(GETDATE()-1, 'yyyyMMdd')) @CensusDateKey ---Need to add it back 
+---AND evnt.EffectiveDateKey > CONVERT(INT, FORMAT(GETDATE()-1, 'yyyyMMdd'))
+AND evnt.EncounterKey > 0
+AND ptclass.EpicCategoryValueId IN ('101','125', '132') --Inpatient, Inpatient Psych, Inpatient Rehab
+)
+insert into  nhx.DischargeRevLocationByPayorData
+SELECT Distinct dep.LocationName Location, pt.PatientMRN_X MRN, pt.Name PatientName, pt.BirthDate DOB, hspenc.HospitalAccountEpicId, authcert.AuthorizationNumber [Authorization], cvg.PayorName, pop.PatientClass, admdate.DateValue AdmissionDate
+,dschdate.DateValue DischargeDate, hspenc.DischargeDisposition, hspenc.InpatientLengthOfStayInDays LOS, HospitalService
+---into nhx.DischargeRevLocationByPayorData
+FROM pop
+INNER JOIN HospitalAdmissionFact hspenc		ON pop.EncounterKey = hspenc.EncounterKey 
+INNER JOIN PatientDim pt					ON hspenc.PatientDurableKey = pt.DurableKey and pt.IsCurrent = 1
+INNER JOIN CoverageDim cvg					ON hspenc.PrimaryCoverageKey = cvg.CoverageKey
+INNER JOIN DepartmentDim dep				ON pop.DepartmentKey = dep.DepartmentKey AND dep.IsDepartment = 1
+INNER JOIN DateDim admdate					ON hspenc.AdmissionDateKey = admdate.DateKey
+INNER JOIN DateDim dschdate					ON hspenc.DischargeDateKey = dschdate.DateKey
+LEFT OUTER JOIN AuthorizationFact authcert	ON hspenc.ReferralEpicId_X = authcert.ReferralEpicId
+
+WHERE 1 = 1
+AND  dep.LocationEpicID = @LocationEpicId
+AND (UPPER(cvg.PayorName) IN (SELECT	UPPER(REPLACE (value,'"','')) AS PayorName
+FROM	STRING_SPLIT(@PayorName, ',')) 
+OR
+UPPER(cvg.BenefitplanName) IN (SELECT	UPPER(REPLACE (value,'"','')) AS BenefitplanName
+FROM	STRING_SPLIT(@BenefitplanName, ',')) 
+)
+
+END
+GO
+
+
