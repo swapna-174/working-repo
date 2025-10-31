@@ -1,105 +1,131 @@
+import os
 import PureCloudPlatformClientV2
 from PureCloudPlatformClientV2.rest import ApiException
-from pprint import pprint
 from datetime import datetime, timedelta, timezone
 import pandas as pd
+from pandas import json_normalize
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.types import String, Integer, Float, DateTime, Boolean
+from sqlalchemy.dialects.mssql import NVARCHAR, DATETIME2, BIT, BIGINT, FLOAT
 import urllib
 
-# Set region and authenticate
-region = PureCloudPlatformClientV2.PureCloudRegionHosts.us_west_2
-PureCloudPlatformClientV2.configuration.host = region.get_api_host()
+# --- Config (use env vars!) ---
+REGION = PureCloudPlatformClientV2.PureCloudRegionHosts.us_west_2
+PureCloudPlatformClientV2.configuration.host = REGION.get_api_host()
 
-client_id = '57a604b2-1c4b-4fa1-b84a-d30dc733f48a'
-client_secret = 'bjXobAVFqcHoD-0fpr-rH9MRjoJOaG_6ic71YQJkQ9k'
+CLIENT_ID = os.getenv("GENESYS_CLIENT_ID")
+CLIENT_SECRET = os.getenv("GENESYS_CLIENT_SECRET")
 
+SERVER_NAME = "BISSAS02PV"
+DATABASE_NAME = "SNOW_Data"
+TABLE_NAME = "GenesysConversations_data"
+SCHEMA = "dbo"  # change if needed
+IF_EXISTS_MODE = "replace"  # or "append"
+
+# --- Auth ---
 api_client = PureCloudPlatformClientV2.api_client.ApiClient()
-api_client.get_client_credentials_token(client_id, client_secret)
-
-# Create Conversations API instance
+api_client.get_client_credentials_token(CLIENT_ID, CLIENT_SECRET)
 conversations_api = PureCloudPlatformClientV2.ConversationsApi(api_client)
 
-# Specify conversation IDs
-#conversation_ids = ['80b9745d-0341-4591-a428-ba9d81068bfc']
-
-# Define time range (last 7 days)
+# --- Time window (last 30 days) ---
 end_time = datetime.now(timezone.utc)
 start_time = end_time - timedelta(days=30)
+interval = f"{start_time.isoformat()}/{end_time.isoformat()}"
 
-start_str = start_time.isoformat()
-end_str = end_time.isoformat()
-
-# Pagination setup
+# --- Pull data (paged) ---
 page_number = 1
 page_size = 100
 all_conversations = []
 
 while True:
     query_body = {
-        "interval": f"{start_str}/{end_str}",
-        "paging": {
-            "pageSize": page_size,
-            "pageNumber": page_number
-        }
+        "interval": interval,
+        "paging": {"pageSize": page_size, "pageNumber": page_number}
+        # add "order": "asc", "sortBy": "conversationStart" if you want deterministic paging
     }
-
     try:
-        response = conversations_api.post_analytics_conversations_details_query(query_body)
-        conversations = response.conversations
-        all_conversations.extend(conversations)
+        resp = conversations_api.post_analytics_conversations_details_query(query_body)
+        convos = resp.conversations or []
+        all_conversations.extend([c.to_dict() for c in convos])
 
-        print(f"Fetched page {page_number} with {len(conversations)} conversations.")
+        print(f"Fetched page {page_number} with {len(convos)} conversations.")
 
-        if len(conversations) < page_size:
-            break  # Last page reached
-
+        if len(convos) < page_size:
+            break
         page_number += 1
 
     except ApiException as e:
-        print(f"Error fetching conversations: {e.status} - {e.reason}")
-        break
+        # Print full context if Genesys returns a JSON body
+        extra = getattr(e, "body", None)
+        print(f"Error fetching conversations: {e.status} - {e.reason}. Details: {extra}")
+        raise
 
-# Convert conversation objects to dictionaries
-conversation_dicts = [convo.to_dict() for convo in all_conversations]
+if not all_conversations:
+    print("No conversations found in the specified interval.")
+    # You may want to exit early here.
+    
+# --- Flatten nested JSON ---
+df_raw = pd.DataFrame(all_conversations)
+df = json_normalize(all_conversations, sep="__")
 
-# Create a DataFrame
-df = pd.DataFrame(conversation_dicts)
+# --- Coerce timestamps to datetime where possible ---
+for col in df.columns:
+    # Heuristic: parse ISO timestamps
+    if df[col].dtype == "object":
+        sample = df[col].dropna().astype(str).head(5)
+        if sample.str.match(r"\d{4}-\d{2}-\d{2}T").all():
+            df[col] = pd.to_datetime(df[col], errors="ignore", utc=True)
 
-# Generate dtype mapping for SQL Server
-dtype_mapping = {}
-for column, dtype in df.dtypes.items():
-    if pd.api.types.is_integer_dtype(dtype):
-        dtype_mapping[column] = Integer()
+# --- Build MSSQL dtype map (use NVARCHAR(MAX) for text-ish/object cols) ---
+dtype_map = {}
+for col, dtype in df.dtypes.items():
+    if pd.api.types.is_bool_dtype(dtype):
+        dtype_map[col] = BIT
+    elif pd.api.types.is_integer_dtype(dtype):
+        # conversation IDs, participant counts can exceed INT; use BIGINT
+        dtype_map[col] = BIGINT
     elif pd.api.types.is_float_dtype(dtype):
-        dtype_mapping[column] = Float()
-    elif pd.api.types.is_bool_dtype(dtype):
-        dtype_mapping[column] = Boolean()
+        dtype_map[col] = FLOAT
     elif pd.api.types.is_datetime64_any_dtype(dtype):
-        dtype_mapping[column] = DateTime()
+        dtype_map[col] = DATETIME2
     else:
-        dtype_mapping[column] = String(255)
+        # Default to NVARCHAR(MAX) to avoid truncation of long JSON/text
+        dtype_map[col] = NVARCHAR(None)  # renders as NVARCHAR(MAX)
 
-# Define SQL Server connection string using trusted connection
-driver_name = 'ODBC Driver 17 for SQL Server'
-server_name = 'BISSAS02PV'
-database_name = 'SNOW_Data'
-IF_EXISTS_MODE = 'replace'   # or 'append
-
+# --- Connection (Windows auth) ---
+driver_name = "ODBC Driver 17 for SQL Server"  # or 18 if that's what you have installed
 conn_str = (
     f"DRIVER={{{driver_name}}};"
-    f"SERVER={server_name};"
-    f"DATABASE={database_name};"
+    f"SERVER={SERVER_NAME};"
+    f"DATABASE={DATABASE_NAME};"
     f"Trusted_Connection=yes;"
 )
-
 conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
 
-# Create SQLAlchemy engine and export to SQL Server with error handling
+# --- Write to SQL Server ---
 try:
-    engine = create_engine(conn_url, connect_args={"connect_timeout": 90})
-    df.to_sql('GenesysConversations_data', con=engine, if_exists=IF_EXISTS_MODE, index=False, dtype=dtype_mapping)
-    print("Data has been successfully exported to SQL Server table 'GenesysConversations_data")
+    engine = create_engine(
+        conn_url,
+        connect_args={"connect_timeout": 90},
+        fast_executemany=True  # big perf boost with pyodbc
+    )
+    # chunksize/method='multi' reduces round-trips and memory
+    df.to_sql(
+        TABLE_NAME,
+        con=engine,
+        schema=SCHEMA,
+        if_exists=IF_EXISTS_MODE,
+        index=False,
+        dtype=dtype_map,
+        chunksize=2000,
+        method="multi",
+    )
+    print(f"Data has been successfully exported to SQL Server table [{SCHEMA}].[{TABLE_NAME}]")
 except SQLAlchemyError as db_err:
-    print(f"Database connection or export failed: {db_err}")
+    # Show the underlying DBAPI error if present
+    msg = str(db_err)
+    if hasattr(db_err, "orig"):
+        msg += f" | DBAPI: {db_err.orig}"
+    print(f"Database connection or export failed: {msg}")
+    raise
+
