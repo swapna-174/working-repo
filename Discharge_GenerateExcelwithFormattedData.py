@@ -48,15 +48,14 @@ try:
         engine = create_engine(conn_url, connect_args={"connect_timeout": 30})        
 
         # Query to fetch only the LocationName
-        location_query = "SELECT DISTINCT CONCAT(LocationName,'-',CAST(GETDATE() AS DATE))LocationName FROM [NHX].[CensusRevLocationByPayorData]"
+        location_query = "SELECT DISTINCT CONCAT(Location,'-',CAST(GETDATE() AS DATE))as Location FROM [NHX].[DischargeRevLocationByPayorData]"
         location_df = pd.read_sql(location_query, engine)
-        payor_query = "SELECT DISTINCT PayorName as PayorCategory FROM [NHX].[CensusRevLocationByPayorData]"
+        payor_query = "SELECT DISTINCT PayorName as PayorCategory FROM [NHX].[DischargeRevLocationByPayorData]"
         payor_df = pd.read_sql(payor_query, engine)
-        
-        
-        # Retrieve single LocationName if available
+
+        #   Retrieve single LocationName and PayorCategory
         if not location_df.empty:
-            single_location_name = location_df['LocationName'].iloc[0]        
+            single_location_name = location_df['Location'].iloc[0]        
         else:
             stop_process = 1
             
@@ -67,20 +66,23 @@ try:
             
         if stop_process == 0:
             
-            # Query to fetch data
-            query = f"""SELECT	CONCAT('''',HospitalAccountEpicId)	AS HspAcct#
-                            ,PatientName	AS PatientName
-                            ,DOB	 
-                            ,SubscriberNumber	AS Subscriber#
-                            ,AdmissionDate	AS AdmitDt
-                            ,DXCode	AS PrimaryDX
-                            ,AdmittingProvider	AS AdmitProvider
-                            ,PatientClass	AS PtClass
-                            ,Unit			
-                            ,RoomName
-            FROM [NHX].[CensusRevLocationByPayorData]"""  # Modify as needed
+            
+        # Query to fetch data
+            query = f"""SELECT 
+    CONCAT('''',HospitalAccountEpicId) AS HspAcct#
+    ,[MRN]
+    ,[PatientName] as PatientName
+    ,[DOB]
+    ,SubscriberNumber	AS Subscriber#
+    ,[Authorization] Auth#
+    ,[PatientClass] as PtClass
+    ,[AdmissionDate] as AdmitDt
+    ,[DischargeDate] as DischDt
+    ,[DischargeDisposition] as DischargeDisposition
+    ,[LOS]
+    ,[HospitalService] as HospitalSvc
+    FROM [NHX].[DischargeRevLocationByPayorData]"""  # Modify as needed
 
-           
             # Read data into DataFrame
             df = pd.read_sql(query, engine)        
 
@@ -98,7 +100,6 @@ try:
                                  bottom=Side(style='thin'))
 
             # Write LocationName to the first row, spanning all columns
-                 
             total_columns = len(df.columns)
             payor_cell = ws.cell(row=1, column=1, value=single_payor_name)
             ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=total_columns)  # Merge cells
@@ -114,7 +115,6 @@ try:
             # Set the height of the first row (Location Name)
             ws.row_dimensions[1].height = 30  # Adjust the height as needed, e.g., 30 points
             ws.row_dimensions[2].height = 30
-         
              # Write headers to the second row (excluding LocationName)
             for c_idx, col in enumerate(df.columns, 1):
                 header_cell = ws.cell(row=3, column=c_idx, value=col)
@@ -122,7 +122,7 @@ try:
                 header_cell.alignment = Alignment(horizontal='left', vertical='bottom', wrap_text=False)
             
              # Define a list of columns that should not have wrapping
-            no_wrap_columns = ['HspAcct#', 'DOB', 'AdmitDt' ,'PatientName', 'Unit']
+            no_wrap_columns = ['HspAcct#','MRN' 'DOB']
 
             # Write data to the third row onwards
             for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=False), 4):  # Start from row 3
@@ -143,10 +143,13 @@ try:
                 # Set specific width multipliers for no-wrap columns
                 if df.columns[c_idx - 1] in ['DOB']:
                     header_cell = ws.cell(row=3, column=c_idx)  # Reference to header cell
-                    column_length = len(header_cell.value) * 3 if header_cell.value is not None else 0
-                elif df.columns[c_idx - 1] in ['Subscriber#']:
+                    column_length = len(header_cell.value) * 2.5 if header_cell.value is not None else 0
+                elif df.columns[c_idx - 1] in ['MRN']:
                     header_cell = ws.cell(row=3, column=c_idx)  # Reference to header cell
-                    column_length = len(header_cell.value) * 1 if header_cell.value is not None else 0
+                    column_length = len(header_cell.value) * 2 if header_cell.value is not None else 0
+                elif df.columns[c_idx - 1] in ['DischDt']:
+                    header_cell = ws.cell(row=3, column=c_idx)  # Reference to header cell
+                    column_length = len(header_cell.value) * 1.0 if header_cell.value is not None else 0
                 elif df.columns[c_idx - 1] in no_wrap_columns:
                     # For other no-wrap columns, use 1.5x the header length
                     header_cell = ws.cell(row=3, column=c_idx)  # Reference to header cell
@@ -170,6 +173,5 @@ try:
             stop_process =  1
     else:
         stop_process =  1
-    
 except Exception as ex:
     print(f"Python script failed with error message:- {str(ex)}")    
