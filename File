@@ -1,13 +1,102 @@
-SELECT
-HSP_ACCT_WQ_ITEMS.ITEM_ID
-,HSP_ACCT_WQ_ITEMS.WORKQUEUE_ID
-,HSP_ACCT_WQ_ITEMS.HSP_ACCOUNT_ID
-,CAST(HSP_ACCT_WQ_ITEMS.ENTRY_DATE AS date) ENTRY_DATE
-,CAST(HSP_ACCT_WQ_ITEMS.RELEASE_DATE AS date) RELEASE_DATE
-,HSP_ACCT_WQ_ITEMS.DEFERRAL_DUE_DTTM
-,CASE WHEN HSP_ACCT_WQ_ITEMS.TAB_STATUS_C=0 THEN 1 ELSE 0 END AS IS_ACTIVE
-,ZC_TICKLER_REASON.NAME AS DEFERRAL_REASON
-FROM HSP_ACCT_WQ_ITEMS
+-- Query Type: Standard Query
+-- Optimizations applied: Use Primary Keys in Clauses, Remove Self Joins, Query Consolidation
+SET TRANSACTION ISOLATION LEVEL SNAPSHOT
 
-LEFT OUTER JOIN ZC_TICKLER_REASON
-	ON ZC_TICKLER_REASON.TICKLER_REASON_C = HSP_ACCT_WQ_ITEMS.DEFERRAL_REASON_C
+DROP TABLE IF EXISTS #resultSet;
+
+SELECT * INTO #resultSet
+FROM ( 
+     SELECT slice0 ,
+         SUM ( CAST ( measure1 AS NUMERIC ( 18, 2 )  )  )  AS measure1 ,
+         COUNT_BIG (  CASE WHEN measure1 IS NULL THEN NULL ELSE BillingTransactionKey END  )  AS measure1_applCount ,
+         COUNT_BIG (  BillingTransactionKey  )  AS count2 ,
+         COUNT_BIG (  BillingTransactionKey  )  AS count3
+    FROM  ( 
+         SELECT subq0.BillingTransactionKey AS BillingTransactionKey,
+             subq0.slice0 AS slice0 ,
+             subq0.slice0Index AS slice0Index ,
+             subq0.measure1 AS measure1 ,
+             NULL AS count2,
+             NULL AS count3
+        FROM  ( 
+            SELECT RootTable0.BillingTransactionKey AS BillingTransactionKey,
+                 rollupTable.RollupLevel AS slice0Index ,
+                  ( 
+                    CASE
+                        WHEN  ( rollupTable.RollupLevel IN  ( 1 )  )  THEN -999
+                        WHEN  ( NotASubquery1.slice0 IS NULL )  THEN 28
+                        ELSE NotASubquery1.slice0 END
+                 )  AS slice0 ,
+                 NULL AS slice0MaxValue ,
+                 NULL AS count2 ,
+                 NULL AS count3 ,
+                 RootTable0.Amount AS measure1
+            FROM dbo.BillingTransactionFact AS RootTable0
+            LEFT OUTER JOIN  ( 
+                SELECT  ( 
+                        CASE
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Refund'  )  THEN 0
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'PLB Adjustment'  )  THEN 1
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Late Fee'  )  THEN 2
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Blue Ridge Accounts Receivable'  )  THEN 3
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Agency'  )  THEN 4
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Escheat'  )  THEN 5
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Administrative Bad Debt'  )  THEN 6
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Bad Debt Write Off'  )  THEN 7
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Non-Cash'  )  THEN 8
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Administrative Contractual'  )  THEN 9
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Audit'  )  THEN 10
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Research and Grants'  )  THEN 11
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Denied - Credentialing'  )  THEN 12
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Downgrade'  )  THEN 13
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Denied - Miscellaneous'  )  THEN 14
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Denied - Medical Necessity'  )  THEN 15
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Denied - No Auth'  )  THEN 16
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Other Allowance'  )  THEN 17
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Denied - Non-Covered'  )  THEN 18
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Regulatory CCI Edits'  )  THEN 19
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Bundling'  )  THEN 20
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Denied - Timely Filing'  )  THEN 21
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Allowance Discrepancy'  )  THEN 22
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Administrative'  )  THEN 23
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Uninsured Discount/Financial Assistance'  )  THEN 24
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Cost Reporting'  )  THEN 25
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Charity'  )  THEN 26
+                            WHEN  (  SlicerTable1.AdjustmentCategory = 'Contractual'  )  THEN 27
+                            ELSE NULL END
+                     )  AS slice0 ,
+                     SlicerTable1.*
+                FROM dbo.BillingProcedureDim AS SlicerTable1
+                WHERE  ( 
+                      ( 
+                          (  SlicerTable1.AdjustmentCategory = 'Refund'  )  OR  (  SlicerTable1.AdjustmentCategory = 'PLB Adjustment'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Late Fee'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Blue Ridge Accounts Receivable'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Agency'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Escheat'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Administrative Bad Debt'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Bad Debt Write Off'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Non-Cash'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Administrative Contractual'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Audit'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Research and Grants'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Denied - Credentialing'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Downgrade'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Denied - Miscellaneous'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Denied - Medical Necessity'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Denied - No Auth'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Other Allowance'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Denied - Non-Covered'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Regulatory CCI Edits'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Bundling'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Denied - Timely Filing'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Allowance Discrepancy'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Administrative'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Uninsured Discount/Financial Assistance'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Cost Reporting'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Charity'  )  OR  (  SlicerTable1.AdjustmentCategory = 'Contractual'  ) 
+                     )  AND  ( SlicerTable1.IsCurrent = 1 ) 
+                 ) 
+             )  NotASubquery1
+            ON  ( RootTable0.BillingProcedureDurableKey = NotASubquery1.DurableKey )  AND  (  ( NotASubquery1.Type='Adjustment' )  ) 
+        CROSS JOIN  ( SELECT -1 AS RollupLevel UNION ALL SELECT 1 AS RollupLevel )  rollupTable
+            WHERE  ( 
+                 ( 
+                     (  ( RootTable0.PostDateKey < '20260214' )  AND NOT  ( RootTable0.PostDateKey < 0 )  )  AND  (  ( RootTable0.PostDateKey >= '20250401' )  OR  ( RootTable0.PostDateKey < 0 )  ) 
+                 )  AND  ( RootTable0.HospitalBillingTransactionEpicId IS NOT NULL )  AND  ( 
+                      (  RootTable0.ReportingTransactionType = 'Payment/Refund'  )  OR  (  RootTable0.ReportingTransactionType = 'Adjustment'  ) 
+                 ) 
+             ) 
+         )  subq0
+        WHERE  (  ( subq0.slice0 <> '28' )  OR  ( subq0.slice0MaxValue IS NULL )  ) 
+     )  subq
+    WHERE
+     subq.BillingTransactionKey > 0
+    GROUP BY slice0
+ )  AS tempResultSet
+OPTION  ( RECOMPILE, USE HINT  ( 'FORCE_DEFAULT_CARDINALITY_ESTIMATION', 'DISABLE_OPTIMIZER_ROWGOAL' ) , NO_PERFORMANCE_SPOOL ) 
+
+SELECT DISTINCT mainResultSet.slice0 ,
+     mainResultSet.measure1 AS measure1 ,
+     mainResultSet.measure1_applCount AS measure1_applCount ,
+     mainResultSet.count2 AS count2 ,
+     mainResultSet.count3 AS count3
+FROM #resultSet mainResultSet
+WHERE mainResultSet.slice0 IS NOT NULL
+
+DROP TABLE #resultSet 
