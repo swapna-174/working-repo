@@ -1,0 +1,76 @@
+https://userweb.epic.com/Thread/101002/SQL-Needed-for-Closest-Assistive-Device-Flowsheet-RECORDED_T/
+
+select
+peh1.INPATIENT_DATA_ID,
+fm1.RECORDED_TIME,
+peh1.PAT_ID,
+fm1.LINE,
+fm1.FSD_ID,
+fm1.FLO_MEAS_ID,
+fm1.MEAS_VALUE
+from PAT_ENC_HSP peh1
+join CLARITY.IP_FLWSHT_REC r1 on peh1.INPATIENT_DATA_ID = r1.INPATIENT_DATA_ID
+join CLARITY.IP_FLWSHT_MEAS fm1 on r1.FSD_ID = fm1.FSD_ID
+where fm1.FLO_MEAS_ID in (3040032252)
+and peh1.PAT_ID = 123456
+and trunc(fm1.RECORDED_TIME) BETWEEN to_date('09-17-2020','MM-DD-YYYY') AND TO_DATE('09-17-2020','MM-DD-YYYY')
+
+Rows returned:
+
+17-SEP-20 01:00
+
+17-SEP-20 09:00
+
+17-SEP-20 11:00
+
+The Assistive Device rows documented for the patient:
+
+select
+  r2.INPATIENT_DATA_ID,
+
+  fm2.RECORDED_TIME,
+
+  fm2.FSD_ID,
+  fm2.LINE,
+  fm2.FLO_MEAS_ID,
+
+  fm2.MEAS_VALUE,
+
+  g2.DISP_NAME,
+
+  g2.VAL_TYPE_C,
+  g2.FLO_MEAS_NAME
+
+  from CLARITY.IP_FLWSHT_REC r2
+  join CLARITY.IP_FLWSHT_MEAS fm2 on r2.FSD_ID = fm2.FSD_ID
+  join CLARITY.IP_FLO_GP_DATA g2 on fm2.FLO_MEAS_ID = g2.FLO_MEAS_ID
+  where fm2.FLO_MEAS_ID in ('3040032695','16014269')
+  and r2.INPATIENT_DATA_ID = 123456
+  and trunc(fm2.RECORDED_TIME) BETWEEN to_date('09-17-2020','MM-DD-YYYY') AND TO_DATE('09-17-2020','MM-DD-YYYY')
+
+Rows returned:
+
+17-SEP-20 01:00 Line 82 Walker
+
+17-SEP-20 09:00  Line 389 Walker
+
+SQL identified to obtain closest RECORDED_TIME is the following but a method for joining all this SQL has not been found after trying numerous approaches:
+
+  select AstDv.FSLnNbr3, AstDv.FSRcdDtTm2
+  from
+    (
+      select peh3.PAT_ID as PEHPtId2, fm3.RECORDED_TIME as FSRcdDtTm2, fm3.MEAS_VALUE as FSMsrVal2, fm3.LINE as FSLnNbr3,
+      ROW_NUMBER() OVER (ORDER BY ABS (to_date('09-17-2020 00:45','MM-DD-YYYY HH24:MI') - fm3.RECORDED_TIME)) rn
+      from PAT_ENC_HSP peh3
+      join CLARITY.IP_FLWSHT_REC r3 on peh3.INPATIENT_DATA_ID = r3.INPATIENT_DATA_ID
+      join CLARITY.IP_FLWSHT_MEAS fm3 on r3.FSD_ID = fm3.FSD_ID
+      where fm3.FLO_MEAS_ID in ('3040032695','16014269')
+      and peh3.INPATIENT_DATA_ID = 123456
+      and trunc(fm3.RECORDED_TIME) BETWEEN to_date('09-17-2020','MM-DD-YYYY') AND TO_DATE('09-17-2020','MM-DD-YYYY')
+     order by rn
+    ) AstDv
+    where AstDv.rn = 1
+
+Rows returned:
+
+17-SEP-20  01:00 Line Nbr: 82
