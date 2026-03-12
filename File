@@ -1,3 +1,1 @@
-select *from CL_REMIT CL JOIN 
-REMIT_LOAD_INFO  REMITINFO on CL.IMAGE_ID=REMITINFO.IMAGE_ID
-JOIN REMIT_PROC_INFO RRT ON REMITINFO.RECORD_ID=RRT.RECORD_ID
+I am the only one working in my family and I also have a child at home with medical needs, so I have significant responsibilities to manage. My manager and director are aware of this situation. I have asked management a few times about a promotion, but it hasn’t happened yet. If needed, you can make whatever decision you feel is appropriate regarding my role.
