@@ -1,280 +1,43 @@
-/************************************************* 
-** Author: Swapna Boga
-** Name: rdsc_epic_ClinicalResearch_Charges_Revenue
-** Description:  stage.rdsc.rdsc_epic_ClinicalResearch_Charges_Revenue a data mart table that stores information related to general patient health for patients . This table consolidates patient information from many subject areas including lab values, encounters, vitals, medications, 
-** total, estimated  history, and risk scores.
-** Parameters:  NONE
-** Test Run:  In Snowflake  DEV -Stage-RDSC
-** Revisions: 1/21/2026 -Filter removed 
-*************************************************/
+build me SQL using all these table s DEMOGRAPHICS
+DEMOGRAPHICS
 
-CREATE OR REPLACE TABLE stage.rdsc.rdsc_epic_ClinicalResearch_Charges_Revenue  AS
+BILLING_INFO_TS
+PATIENT
+DM_ANESTHESIA
+DM_ANESTHESIA
 
-
-WITH CTE_BILLING AS (
-SELECT 
-DISTINCT
-    BA.billingaccountkey
-  , BA.accountepicid
-  , BA.accountepicinternalid_x
-  , BA.financialclass
-  , BT.billingsystemtype
-  , BT.encounterkey
-  , BT.billingtransactionkey
-  , BT.patientdurablekey
-  , BT.postdatekey
-  , DT.DATEVALUE as postdate
-  , BT.SERVICEDATEKEY
-  , BT.transactiontype
-  , BT.billstatus
-  , CASE WHEN (BT.selfpaystatus in ('*Not Applicable','*Unspecified')) then 'Unspecified' else BT.selfpaystatus end as selfpaystatus
-  , CASE WHEN (BT.researchmodifiertype in ('*Not Applicable','*Unspecified')) then 'Unspecified' else BT.researchmodifiertype end as researchmodifiertype
-  , CASE WHEN (BT.researchchargeassignment in ('*Not Applicable','*Unspecified')) then 'Unspecified' else BT.researchchargeassignment end as researchchargeassignment
-  , BT.isresearchrelated
-  , BT.researchstudykey
-  , BT.billingprocedurecode
-  , BT.billingproceduredescription
-  , CASE WHEN BT.researchstudykey IN (-1, -2, -3) THEN 'NO' ELSE 'YES' END AS RESEARCH_CHARGE_FLAG
-  , CASE WHEN (BT.REVENUECODE in ('*Not Applicable','*Unspecified')) then null else BT.REVENUECODE end as REVENUECODE
-  , case when (BA.CENSUSCLASSIFICATION = 'Inpatient') then 'INPATIENT' else 'OUTPATIENT' end as Encounter_Class
-  , CONCAT(substr(BT.POSTDATEKEY,1,4) , case when (BA.CENSUSCLASSIFICATION = 'Inpatient') then 'INPATIENT' else 'OUTPATIENT' end, BA.financialclass) as pc_key
-  , BT.amount
-
-FROM ACCESS.CABOODLE.billingtransactionfact AS BT
-  INNER JOIN ACCESS.CABOODLE.billingaccountfact AS BA ON BT.billingaccountkey = BA.billingaccountkey
-  INNER JOIN ACCESS.CABOODLE.datedim AS DT ON BT.postdatekey = DT.datekey
-WHERE BT.transactiontype = 'Charge'
-  AND BT.count = 1),
-CTE_PI AS (
-SELECT  RSH.RESEARCH_STUDY_NAME,
-        RSH.STUDY_CODE,
-        PROV.EXTERNAL_NAME PRINCIPAL_INVESTIGATOR,
-        RSH.RPT_GRP_TXT_2 PRIMARY_STUDY_COORDINATOR,
-        RSH.RPT_GRP_TXT_3 STUDY_SPONSOR
-FROM CLARITY.RSH_RESEARCH_INFO RSH
-  INNER JOIN CLARITY.CLARITY_SER PROV
-    ON RSH.PROV_ID = PROV.PROV_ID) ,
-CTE_PAYOR_MIX AS (
-SELECT 
-     concat (pc."Discharge Year"+1,case when "SL PT Type" = 'IP' then 'INPATIENT' 
-     when "SL PT Type" = 'OP' then 'OUTPATIENT' end,"Payor Mix (Corporate)") as pckey,
-    AVG(pc."Net Revenue"/"CHARGES") as Rev_percent
-FROM STAGE.RDSC.RDSC_NONEPIC_PAYOR_CHARGES pc
-where "Payor Mix (Corporate)" is not null
-group by concat (pc."Discharge Year"+1,case when "SL PT Type" = 'IP' then 'INPATIENT' 
-when "SL PT Type" = 'OP' then 'OUTPATIENT' end,"Payor Mix (Corporate)")
-),
-CTE_ENCOUNTERS AS
- 
-(
-SELECT DISTINCT
-    ENC.encounterkey
-  , ENC.patientdurablekey
-  , ENC.type
-  , ENC.date AS ENCOUNTERDATE
-  , ENC.DATEKEY as ENCOUNTERDATEKEY
-  , ENC.ENDDATEKEY as ENCOUNTERENDDATEKEY
-  , ENC.ENCOUNTERREALCSN_X
-  , DEP.departmentkey
-  , DEP.departmentexternalname
-  , DEP.LOCATIONNAME
-  , DEP.PARENTLOCATIONNAME
-  , DEP.regionname
-  , DEP.CITY
-  , DEP.COUNTY
-  , DEP.STATEORPROVINCE
-  , DEP.POSTALCODE
-  , PR.NAME as PROVIDER_NAME
-  , PR.Primaryspecialtycmsname Provider_Specialty
-  , PR.type Provider_Type
-  --, Case when (HSP.PATIENTDURABLEKEY is not null) then 'INPATIENT' else 'OUTPATIENT' end as Encounter_Class
-FROM CABOODLE.encounterfact AS ENC
-  LEFT JOIN CABOODLE.departmentdim AS DEP ON ENC.departmentkey = DEP.departmentkey
-  LEFT JOIN caboodle.providerdim AS PR ON (ENC.PROVIDERDURABLEKEY = PR.durablekey --JA: Updated this join to use the encounter provider key
-                                            AND pr.iscurrent = 1)
-  --INNER JOIN CABOODLE.datedim AS DT ON enc.datekey = DT.datekey
-  /*LEFT JOIN CABOODLE.HOSPITALADMISSIONFACT HSP on (HSP.ENCOUNTERKEY = ENC.ENCOUNTERKEY
-          AND HSP.PATIENTDURABLEKEY = ENC.PATIENTDURABLEKEY)*/
- 
-WHERE ENC.count = 1
-  AND ENC.datekey >  20240101
-  --AND 20230630  --All encounters 2023-present
-  --AND DEP.regionname = 'CENTRAL FL SOUTH REGION'  --CFD-S region encounters only
-),CTE_RESEARCH_STUDIES AS
-
-(
-SELECT DISTINCT
-    RD.researchstudykey
-  , RD.nationalclinicaltrialsnumber AS NCT_NO
-  , RD.ethicsreviewapprovalnumber AS IRB_NO
-  , RD.code AS STUDY_CODE
-  , CASE WHEN (RD.name in ('*Not Applicable','*Unspecified')) then 'Unspecified' else RD.name end as STUDY_NAME
-  , CASE WHEN (RD.type in ('*Not Applicable','*Unspecified')) then 'Unspecified' else RD.type end as STUDY_TYPE
-  , RD.status AS STUDY_STATUS
-  , RD.statustype AS STUDY_STATUS_TYPE
-  , RD.billingstatus AS STUDY_BILLING_STATUS
-  , RD.iscurrent AS CURRENT_STUDY_FLAG
-  , RD.startdate
-  , RD.enddate
-
-FROM ACCESS.CABOODLE.researchstudydim AS RD
-where researchstudykey >1
-)
-,
-CTE_RESEARCH_PATIENT_STUDY AS
-
-(
-
-SELECT DISTINCT
-RPF.RESEARCHSTUDYKEY,
-RSD.NAME,
-RPF.PATIENTDURABLEKEY,
-RPF.activestartdatekey AS STARTDATE
-  , CASE
-  		WHEN RPF.activeenddatekey = -1 THEN 21000101
-  		ELSE RPF.activeenddatekey END AS ENDDATE
-FROM CABOODLE.RESEARCHSTUDYPATIENTASSOCIATIONFACT RPF
-LEFT JOIN CABOODLE.RESEARCHSTUDYDIM RSD
-ON RPF.RESEARCHSTUDYKEY=RSD.RESEARCHSTUDYKEY
-WHERE activestartdatekey >=1
-),
-
-CTE_PATIENTS AS
-
-(
-SELECT DISTINCT
-    PT.durablekey
-  , PT.primarymrn
-  , PT.name
-  
-FROM ACCESS.CABOODLE.patientdim AS PT
-
-WHERE PT.iscurrent = 1
-),
-
-
-CTE_RESEARCH_PATIENTS AS
-
-(
-SELECT
-    RPT.patientdurablekey
-  , MIN(RPT.activestartdatekey) AS EARLIEST_START_DATE
-  , CASE
-  		WHEN MAX(RPT.activeenddatekey) = -1 THEN 21000101
-  		ELSE MAX(RPT.activeenddatekey) END AS LATEST_END_DATE
-  
-FROM ACCESS.CABOODLE.researchstudypatientassociationfact AS RPT
-
-WHERE RPT.patientdurablekey NOT IN (-1, -2, -3)
-
-GROUP BY 
-    RPT.patientdurablekey
-
-HAVING MIN(RPT.activestartdatekey) <> -1
-)
-, CTE_REVIEWS AS ( 
-SELECT
-    internal_id,
-        PATIENT_MRN,
-        Review_Qualify_Date AS LatestReviewQualDate,
-        Review_Date as LatestReviewCompDate,
-        IRB_APPROVAL_NUM as REVIEW_IRB,
-        STUDY_NAME AS REVIEW_STUDY,
-    ReviewCount  AS NumberOfReviews,
-    CASE 
-        WHEN Review_Date IS NULL THEN 'Yes'
-        ELSE 'No'
-    END AS IsPendingReview FROM 
- (
-    SELECT
-        internal_id,
-        PATIENT_MRN,
-        Review_Qualify_Date,
-        Review_Date,
-        IRB_APPROVAL_NUM,STUDY_NAME,
-        ROW_NUMBER() OVER (
-            PARTITION BY internal_id
-            ORDER BY Review_Qualify_Date DESC
-        ) AS rn,
-        COUNT(*) OVER (
-            PARTITION BY internal_id
-        ) AS ReviewCount
-    FROM  stage.rdsc.rdsc_epic_clinicalresearch_rbr_reviews
-    where RBR_FLAG = 1
-)
-WHERE rn = 1)
+OTHER_COMMUNCTN
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+EPISODE_2
+SOCIAL_CARE_EPISODE
+SOCIAL_CARE_EPISODE
+CMGMT_CASE_TEAM
+N/A
+N/A
+CMGMT_CASE_TEAM
+EPISODE_2
+EPISODE_2
+CAL_COMM_TRACKING
+CAL_COMM_TRACKING
+CAL_COMM_TRACKING
+CAL_COMM_TRACKING
+N/A- same for the entire file
+REFERRAL_2
 
 
 
-Select 
-    B.billingaccountkey
-  , B.accountepicid
-  , B.accountepicinternalid_x
-  , B.financialclass
-  , B.billingsystemtype
-  , B.encounterkey
-  , B.billingtransactionkey
-  , B.patientdurablekey
-  , PT.PRIMARYMRN
-  , B.postdatekey
-  , B.postdate
-  , B.SERVICEDATEKEY
-  , B.transactiontype
-  , B.billstatus
-  , B.selfpaystatus
-  , B.researchmodifiertype
-  , B.researchchargeassignment
-  , B.isresearchrelated
-  , B.researchstudykey
-  , B.billingprocedurecode
-  , B.billingproceduredescription
-  , B.RESEARCH_CHARGE_FLAG
-  , B.REVENUECODE
-  , B.Encounter_Class
-  , B.amount
-  , B.AMOUNT*PM.Rev_percent AS EST_REV
-  , ENC.patientdurablekey
-  , ENC.type
-  , ENC.ENCOUNTERDATE
-  , ENC.ENCOUNTERREALCSN_X
-  , ENC.departmentkey
-  , ENC.departmentexternalname
-  , ENC.LOCATIONNAME
-  , ENC.PARENTLOCATIONNAME
-  , ENC.regionname
-  , ENC.CITY
-  , ENC.COUNTY
-  , ENC.STATEORPROVINCE
-  , ENC.POSTALCODE
-  , ENC.PROVIDER_NAME
-  , ENC.Provider_Specialty
-  , ENC.Provider_Type
-  , CASE WHEN RP.Patientdurablekey is not null
-    THEN 1 
-    ELSE 0 
-  END as ResearchPatient
-  , CASE WHEN RP.Patientdurablekey is not null  AND ENC.encounterdatekey >= RP.EARLIEST_START_DATE AND ENC.ENCOUNTERENDDATEKEY <=RP.LATEST_END_DATE
-    THEN 1 
-    ELSE 0 
-  END as CurrentResearchPatient
-  , RD.NCT_NO
-  , RD.IRB_NO
-  , RD.STUDY_CODE
-  , RD.STUDY_NAME
-  , RD.STUDY_TYPE
-  , RD.STUDY_STATUS
-  , RD.STUDY_STATUS_TYPE
-  , RD.STUDY_BILLING_STATUS
-  , RD.startdate
-  , RD.enddate
-from CTE_BILLING B
-INNER JOIN CTE_ENCOUNTERS ENC 
-ON (ENC.encounterkey = B.encounterkey 
-  and enc.patientdurablekey=b.patientdurablekey
-    )
-LEFT JOIN CTE_PAYOR_MIX pm on (pm.pckey = B.pc_key)
-INNER JOIN CTE_PATIENTS AS PT ON B.patientdurablekey = PT.durablekey 
-LEFT JOIN CTE_RESEARCH_PATIENTS RP
-ON PT.DURABLEKEY = RP.PATIENTDURABLEKEY
-lEFT JOIN CTE_RESEARCH_STUDIES RD
-ON B.RESEARCHSTUDYKEY = RD.RESEARCHSTUDYKEY
