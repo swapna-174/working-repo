@@ -1,43 +1,24 @@
-build me SQL using all these table s DEMOGRAPHICS
-DEMOGRAPHICS
 
-BILLING_INFO_TS
-PATIENT
-DM_ANESTHESIA
-DM_ANESTHESIA
-
-OTHER_COMMUNCTN
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-EPISODE_2
-SOCIAL_CARE_EPISODE
-SOCIAL_CARE_EPISODE
-CMGMT_CASE_TEAM
-N/A
-N/A
-CMGMT_CASE_TEAM
-EPISODE_2
-EPISODE_2
-CAL_COMM_TRACKING
-CAL_COMM_TRACKING
-CAL_COMM_TRACKING
-CAL_COMM_TRACKING
-N/A- same for the entire file
-REFERRAL_2
-
-
-
+SELECT
+    pat.primarymrn,
+    MAX(CASE
+            WHEN ord.QuestionName = 'AH ONCBCN INITIATE TX PLAN- TXT DEPARTMENT (IP/INF CENTER)'
+            THEN ord.QuestionResponse
+        END) AS department,
+    MAX(CASE
+            WHEN ord.QuestionName = 'AH ONCBCN INITIATE PLAN- PROBLEMS'
+            THEN ord.QuestionResponse
+        END) AS typeOfCancer,
+    MAX(CASE
+            WHEN ord.QuestionName = 'AH ONCBCN INITIATE PLAN- TREATMENT GOAL'
+            THEN ord.QuestionResponse
+        END) AS treatmentGoal
+FROM caboodle.ProcedureOrderFact pof
+LEFT JOIN caboodle.OrderQuestionAnswerMappingFactX ord
+    ON ord.ProcedureOrderKey = pof.ProcedureOrderKey
+LEFT JOIN caboodle.ProcedureDim p
+    ON pof.ProcedureDurableKey = p.DurableKey
+    LEFT JOIN caboodle.Patientdim pat
+    ON pof.PatientDurableKey = pat.DurableKey
+WHERE
+   p.NAME = 'ONCOLOGY PLAN OP INITIATION ORDER (CDF-S & GORDON)'
