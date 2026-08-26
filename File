@@ -1,24 +1,122 @@
 
+LATEST Dx
+
+CTE_LATEST_DX AS
+(
 SELECT
-    pat.primarymrn,
-    MAX(CASE
-            WHEN ord.QuestionName = 'AH ONCBCN INITIATE TX PLAN- TXT DEPARTMENT (IP/INF CENTER)'
-            THEN ord.QuestionResponse
-        END) AS department,
-    MAX(CASE
-            WHEN ord.QuestionName = 'AH ONCBCN INITIATE PLAN- PROBLEMS'
-            THEN ord.QuestionResponse
-        END) AS typeOfCancer,
-    MAX(CASE
-            WHEN ord.QuestionName = 'AH ONCBCN INITIATE PLAN- TREATMENT GOAL'
-            THEN ord.QuestionResponse
-        END) AS treatmentGoal
-FROM caboodle.ProcedureOrderFact pof
-LEFT JOIN caboodle.OrderQuestionAnswerMappingFactX ord
-    ON ord.ProcedureOrderKey = pof.ProcedureOrderKey
-LEFT JOIN caboodle.ProcedureDim p
-    ON pof.ProcedureDurableKey = p.DurableKey
-    LEFT JOIN caboodle.Patientdim pat
-    ON pof.PatientDurableKey = pat.DurableKey
-WHERE
-   p.NAME = 'ONCOLOGY PLAN OP INITIATION ORDER (CDF-S & GORDON)'
+    DEF.patientdurablekey
+  , DEF.encounterkey
+  , DEF.startdatekey
+  , DT.datevalue
+  , DXT.value
+  , DXT.displaystring
+  , ROW_NUMBER() OVER (PARTITION BY DEF.patientdurablekey ORDER BY DEF.startdatekey DESC) AS LATEST_DX
+  , 1 AS LATEST_DX_FLAG
+  
+FROM caboodle.diagnosiseventfact AS DEF
+  INNER JOIN caboodle.diagnosisterminologydim AS DXT ON DEF.diagnosiskey = DXT.diagnosiskey
+  INNER JOIN caboodle.datedim AS DT ON DEF.startdatekey = DT.datekey
+
+WHERE DEF.count = 1
+  AND DEF.type IN ('Encounter Diagnosis', 'Encounter Diagnosis from External Source')
+  AND DXT.type = 'ICD-10-CM'
+  AND (
+      DXT.value LIKE 'C18%'  --Malignant neoplasm of colon
+      OR DXT.value LIKE 'C20%'  --Malignant neoplasm of rectum
+      )
+)
+
+
+LATEST CLINICAL NOTE SEARCHES
+
+BIOMARKERS
+CTE_LATEST_HER2_RESULT AS
+(
+SELECT
+    CN.patientdurablekey
+  , ENC.encounterkey
+  , ENC.date AS ENC_DATE
+  , ENC.type AS ENC_TYPE
+  , CNT.text
+  , CAST(SUBSTRING(SUBSTRING(CNT.text, CHARINDEX('HER2', CNT.text), LEN(CNT.text)), 1, 20) AS STRING) AS HER2_RESULT_TEXT
+  , CN.type AS TEXT_TYPE
+  , CN.status AS NOTE_STATUS
+  , ROW_NUMBER() OVER (PARTITION BY CN.patientdurablekey ORDER BY ENC.date DESC) AS LATEST_VISIT
+  , 1 AS HER2_FLAG
+  
+FROM caboodle.clinicalnotefact AS CN
+  INNER JOIN caboodle.clinicalnotetextfact AS CNT ON CN.clinicalnotekey = CNT.clinicalnotekey
+  INNER JOIN caboodle.encounterfact AS ENC ON CN.encounterkey = ENC.encounterkey
+
+WHERE CN.count = 1
+  AND CNT.count = 1
+  AND ENC.count = 1
+  AND ENC.type IN ('Office Visit', 'Hospital Encounter', 'Historical encounter', 'Hospital', 'Consult', 'Follow-Up', 'Multidisciplinary Visit', 'Tumor Board Conference', 'Specialist Office Visit', 'Recurring Plan', 'Infusion', 'Surgery')
+  AND CN.type NOT IN ('Care Plan', 'Patient Discharge Packet')
+  AND CNT.text LIKE '%HER2%'
+)
+
+STAGING
+CTE_STAGE AS
+(
+SELECT
+     CN.patientdurablekey
+  , ENC.encounterkey
+  , ENC.date AS ENC_DATE
+  , ENC.type AS ENC_TYPE
+  , CNT.text
+  , CN.type AS TEXT_TYPE
+  , CN.status AS NOTE_STATUS
+  , ROW_NUMBER() OVER (PARTITION BY CN.patientdurablekey ORDER BY ENC.date DESC) AS LATEST_VISIT
+  , 1 AS STAGE_IV_FLAG
+  
+FROM caboodle.clinicalnotefact AS CN
+  INNER JOIN caboodle.clinicalnotetextfact AS CNT ON CN.clinicalnotekey = CNT.clinicalnotekey
+  INNER JOIN caboodle.encounterfact AS ENC ON CN.encounterkey = ENC.encounterkey
+
+WHERE CN.count = 1
+  AND CNT.count = 1
+  AND ENC.count = 1
+  AND ENC.type IN ('Office Visit', 'Hospital Encounter', 'Historical encounter', 'Hospital', 'Consult', 'Follow-Up', 'Multidisciplinary Visit', 'Tumor Board Conference', 'Specialist Office Visit', 'Recurring Plan', 'Infusion', 'Surgery')
+  AND CN.type NOT IN ('Care Plan', 'Patient Discharge Packet')
+  AND (
+      LOWER(CNT.text) LIKE '%stage 4%'
+      OR LOWER(CNT.text) LIKE '%stage iv%'
+      )
+)
+
+
+LATEST ONCOLOGIST
+
+CTE_ONCOLOGIST AS
+(
+SELECT
+     ENC.patientdurablekey
+  , ENC.encounterkey
+  , ENC.date AS LATEST_ONCOLOGIST_VISIT_DATE
+  , ENC.type AS LATEST_ONCOLOGIST_VISIT_TYPE
+  , PR.durablekey
+  , PR.name AS LATEST_ONCOLOGIST_NAME
+  , PR.primaryspecialty AS LATEST_ONCOLOGIST_SPECIALTY
+  , PR.primarydepartment AS LATEST_ONCOLOGIST_PRIMARY_DEPT
+  , PR.internalexternal_x AS LATEST_ONCOLOGIST_INTERNALEXTERNAL
+  , DEP.regionname AS LATEST_ONCOLOGIST_VISIT_REGION
+  , DEP.parentlocationname AS LATEST_ONCOLOGIST_VISIT_PARENT_LOCATION
+  , DEP.locationname AS LATEST_ONCOLOGIST_VISIT_LOCATION
+  , DEP.departmentexternalname AS LATEST_ONCOLOGIST_VISIT_DEPT
+  , ROW_NUMBER() OVER (PARTITION BY ENC.patientdurablekey ORDER BY ENC.date DESC) AS LATEST_VISIT
+  , 1 AS ONC_FLAG
+
+FROM caboodle.encounterfact AS ENC
+  INNER JOIN caboodle.providerdim AS PR ON ENC.providerdurablekey = PR.durablekey
+  INNER JOIN caboodle.departmentdim AS DEP ON ENC.departmentkey = DEP.departmentkey
+
+WHERE ENC.count = 1
+  AND ENC.type IN ('Office Visit', 'Hospital Encounter', 'Historical encounter', 'Hospital', 'Consult', 'Follow-Up', 'Multidisciplinary Visit', 'Tumor Board Conference', 'Specialist Office Visit', 'Recurring Plan', 'Infusion', 'Surgery')
+  AND ENC.encounterepiccsn IS NOT NULL
+  AND PR.iscurrent = 1
+  AND PR.type = 'Physician'
+  AND PR.primaryspecialty IN ('Hematology and Oncology', 'Pediatric Oncology', 'Radiation Oncology', 'Neuro-Oncology', 'Hematology', 'Medical Oncology', 'Pediatric Hematology', 'Oncology', 'Surgical Oncology', 'Pediatric Hematology and Oncology', 'Urology Oncology', 'Gynecologic Oncology')
+  AND DEP.regionname IN ('CENTRAL FL NORTH REGION', 'CENTRAL FL SOUTH REGION', 'PCN CENTRAL FL NORTH REGION', 'PCN CENTRAL FL SOUTH REGION')
+)
+
