@@ -68,3 +68,47 @@ WHERE
 
     AND (LTF.OrderDepartmentKey <> 45379
          OR LTF.OrderDepartmentKey IS NULL);
+
+
+
+==============================
+          SELECT
+    lcd.Name AS LabComponent,
+    COUNT(*) AS TotalResults,
+
+    SUM(
+        CASE
+            WHEN lcrtf.Value LIKE 'Negative%' THEN 0
+            ELSE 1
+        END
+    ) AS PositiveResults,
+
+    CAST(
+        100.0 *
+        SUM(
+            CASE
+                WHEN lcrtf.Value LIKE 'Negative%' THEN 0
+                ELSE 1
+            END
+        ) / NULLIF(COUNT(*), 0)
+        AS DECIMAL(5,2)
+    ) AS PercentPoitive
+
+FROM caboodle.LabComponentResultFact lrf
+
+LEFT JOIN caboodle.LabComponentResultTextFact lcrtf
+    ON lcrtf.LabComponentResultKey = lrf.LabComponentResultKey
+
+JOIN caboodle.LabComponentDim lcd
+    ON lrf.LabComponentKey = lcd.LabComponentKey
+
+---WHERE lrf.LabOrderEpicID = 500570852436
+  AND lcd.Name IN (
+        'HER2 (BY IMMUNOHISTOCHEMISTRY)',
+        'ESTROGEN RECEPTOR (ER) STATUS',
+        'PROGESTERONE RECEPTOR (PGR)'
+      )
+  AND lcrtf.Value IS NOT NULL
+
+GROUP BY lcd.Name;
+ 
