@@ -1,122 +1,58 @@
+DECLARE @StartDate DATETIME = '2026-07-01 07:00:00';
+DECLARE @EndDate   DATETIME = '2026-08-01 07:00:00';
 
-LATEST Dx
-
-CTE_LATEST_DX AS
-(
 SELECT
-    DEF.patientdurablekey
-  , DEF.encounterkey
-  , DEF.startdatekey
-  , DT.datevalue
-  , DXT.value
-  , DXT.displaystring
-  , ROW_NUMBER() OVER (PARTITION BY DEF.patientdurablekey ORDER BY DEF.startdatekey DESC) AS LATEST_DX
-  , 1 AS LATEST_DX_FLAG
-  
-FROM caboodle.diagnosiseventfact AS DEF
-  INNER JOIN caboodle.diagnosisterminologydim AS DXT ON DEF.diagnosiskey = DXT.diagnosiskey
-  INNER JOIN caboodle.datedim AS DT ON DEF.startdatekey = DT.datekey
+    COUNT(DISTINCT LTF.CountName) AS CountNameCount,
+    COUNT(DISTINCT LTF.LabTestKey) AS LabTestCount,
+    COUNT(DISTINCT LTF2.BlockName) AS BlockCount,
+    COUNT(DISTINCT LTF2.SlideName) AS SlideCount,
 
-WHERE DEF.count = 1
-  AND DEF.type IN ('Encounter Diagnosis', 'Encounter Diagnosis from External Source')
-  AND DXT.type = 'ICD-10-CM'
-  AND (
-      DXT.value LIKE 'C18%'  --Malignant neoplasm of colon
-      OR DXT.value LIKE 'C20%'  --Malignant neoplasm of rectum
-      )
-)
+    COUNT(DISTINCT LTF.CountName)
+        + COUNT(DISTINCT LTF.LabTestKey)
+        + COUNT(DISTINCT LTF2.BlockName) AS TotalCount,
 
+    COUNT(DISTINCT LTF.LabTestKey) AS TotalLabTests
 
-LATEST CLINICAL NOTE SEARCHES
+FROM dbo.LabTestFact LTF
 
-BIOMARKERS
-CTE_LATEST_HER2_RESULT AS
-(
-SELECT
-    CN.patientdurablekey
-  , ENC.encounterkey
-  , ENC.date AS ENC_DATE
-  , ENC.type AS ENC_TYPE
-  , CNT.text
-  , CAST(SUBSTRING(SUBSTRING(CNT.text, CHARINDEX('HER2', CNT.text), LEN(CNT.text)), 1, 20) AS STRING) AS HER2_RESULT_TEXT
-  , CN.type AS TEXT_TYPE
-  , CN.status AS NOTE_STATUS
-  , ROW_NUMBER() OVER (PARTITION BY CN.patientdurablekey ORDER BY ENC.date DESC) AS LATEST_VISIT
-  , 1 AS HER2_FLAG
-  
-FROM caboodle.clinicalnotefact AS CN
-  INNER JOIN caboodle.clinicalnotetextfact AS CNT ON CN.clinicalnotekey = CNT.clinicalnotekey
-  INNER JOIN caboodle.encounterfact AS ENC ON CN.encounterkey = ENC.encounterkey
+INNER JOIN dbo.LabDim LD
+    ON LTF.LabDurableKey = LD.DurableKey
+    AND LD.IsCurrent = 1
 
-WHERE CN.count = 1
-  AND CNT.count = 1
-  AND ENC.count = 1
-  AND ENC.type IN ('Office Visit', 'Hospital Encounter', 'Historical encounter', 'Hospital', 'Consult', 'Follow-Up', 'Multidisciplinary Visit', 'Tumor Board Conference', 'Specialist Office Visit', 'Recurring Plan', 'Infusion', 'Surgery')
-  AND CN.type NOT IN ('Care Plan', 'Patient Discharge Packet')
-  AND CNT.text LIKE '%HER2%'
-)
+INNER JOIN dbo.LabTaskFact LTF2
+    ON LTF.LabTestKey = LTF2.LabTestKey
 
-STAGING
-CTE_STAGE AS
-(
-SELECT
-     CN.patientdurablekey
-  , ENC.encounterkey
-  , ENC.date AS ENC_DATE
-  , ENC.type AS ENC_TYPE
-  , CNT.text
-  , CN.type AS TEXT_TYPE
-  , CN.status AS NOTE_STATUS
-  , ROW_NUMBER() OVER (PARTITION BY CN.patientdurablekey ORDER BY ENC.date DESC) AS LATEST_VISIT
-  , 1 AS STAGE_IV_FLAG
-  
-FROM caboodle.clinicalnotefact AS CN
-  INNER JOIN caboodle.clinicalnotetextfact AS CNT ON CN.clinicalnotekey = CNT.clinicalnotekey
-  INNER JOIN caboodle.encounterfact AS ENC ON CN.encounterkey = ENC.encounterkey
+WHERE
+    LTF.FirstReceivedInstant >= @StartDate
+    AND LTF.FirstReceivedInstant < @EndDate
 
-WHERE CN.count = 1
-  AND CNT.count = 1
-  AND ENC.count = 1
-  AND ENC.type IN ('Office Visit', 'Hospital Encounter', 'Historical encounter', 'Hospital', 'Consult', 'Follow-Up', 'Multidisciplinary Visit', 'Tumor Board Conference', 'Specialist Office Visit', 'Recurring Plan', 'Infusion', 'Surgery')
-  AND CN.type NOT IN ('Care Plan', 'Patient Discharge Packet')
-  AND (
-      LOWER(CNT.text) LIKE '%stage 4%'
-      OR LOWER(CNT.text) LIKE '%stage iv%'
-      )
-)
+    AND LTF.SourceKey IN
+    (
+        1, 42134, 42135, 42136, 42141, 42142,
+        42143, 42145, 42147, 42148, 42151,
+        42153, 70514, 83993, 83994, 145339,
+        145347, 145373, 145375, 161862, -1, -2
+    )
 
+    AND LD.TypeOfCase IN
+    (
+        'Gynecologic Cytology',
+        'Medical Cytology'
+    )
 
-LATEST ONCOLOGIST
+    AND LTF.PathologyType = 'Anatomic Pathology'
 
-CTE_ONCOLOGIST AS
-(
-SELECT
-     ENC.patientdurablekey
-  , ENC.encounterkey
-  , ENC.date AS LATEST_ONCOLOGIST_VISIT_DATE
-  , ENC.type AS LATEST_ONCOLOGIST_VISIT_TYPE
-  , PR.durablekey
-  , PR.name AS LATEST_ONCOLOGIST_NAME
-  , PR.primaryspecialty AS LATEST_ONCOLOGIST_SPECIALTY
-  , PR.primarydepartment AS LATEST_ONCOLOGIST_PRIMARY_DEPT
-  , PR.internalexternal_x AS LATEST_ONCOLOGIST_INTERNALEXTERNAL
-  , DEP.regionname AS LATEST_ONCOLOGIST_VISIT_REGION
-  , DEP.parentlocationname AS LATEST_ONCOLOGIST_VISIT_PARENT_LOCATION
-  , DEP.locationname AS LATEST_ONCOLOGIST_VISIT_LOCATION
-  , DEP.departmentexternalname AS LATEST_ONCOLOGIST_VISIT_DEPT
-  , ROW_NUMBER() OVER (PARTITION BY ENC.patientdurablekey ORDER BY ENC.date DESC) AS LATEST_VISIT
-  , 1 AS ONC_FLAG
+    AND LTF2.Type IN
+    (
+        'Block Creation',
+        'Slide Creation'
+    )
 
-FROM caboodle.encounterfact AS ENC
-  INNER JOIN caboodle.providerdim AS PR ON ENC.providerdurablekey = PR.durablekey
-  INNER JOIN caboodle.departmentdim AS DEP ON ENC.departmentkey = DEP.departmentkey
+    AND (LTF.CaseStatus <> 'Canceled'
+         OR LTF.CaseStatus IS NULL)
 
-WHERE ENC.count = 1
-  AND ENC.type IN ('Office Visit', 'Hospital Encounter', 'Historical encounter', 'Hospital', 'Consult', 'Follow-Up', 'Multidisciplinary Visit', 'Tumor Board Conference', 'Specialist Office Visit', 'Recurring Plan', 'Infusion', 'Surgery')
-  AND ENC.encounterepiccsn IS NOT NULL
-  AND PR.iscurrent = 1
-  AND PR.type = 'Physician'
-  AND PR.primaryspecialty IN ('Hematology and Oncology', 'Pediatric Oncology', 'Radiation Oncology', 'Neuro-Oncology', 'Hematology', 'Medical Oncology', 'Pediatric Hematology', 'Oncology', 'Surgical Oncology', 'Pediatric Hematology and Oncology', 'Urology Oncology', 'Gynecologic Oncology')
-  AND DEP.regionname IN ('CENTRAL FL NORTH REGION', 'CENTRAL FL SOUTH REGION', 'PCN CENTRAL FL NORTH REGION', 'PCN CENTRAL FL SOUTH REGION')
-)
+    AND (LTF.SpecimenProtocol <> 'HX Specimen Protocol'
+         OR LTF.SpecimenProtocol IS NULL)
 
+    AND (LTF.OrderDepartmentKey <> 45379
+         OR LTF.OrderDepartmentKey IS NULL);
