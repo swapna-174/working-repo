@@ -1,0 +1,70 @@
+DECLARE @StartDate DATETIME = '2026-07-01 07:00:00';
+DECLARE @EndDate   DATETIME = '2026-08-01 07:00:00';
+
+SELECT
+    COUNT(DISTINCT LTF.CountName) AS CountNameCount,
+
+    COUNT(DISTINCT LTF.LabTestKey) AS LabTestCount,
+
+    COUNT(DISTINCT CASE 
+        WHEN LTF2.Type = 'Block Creation' 
+        THEN LTF2.BlockName 
+    END) AS BlockCount,
+
+    COUNT(DISTINCT CASE 
+        WHEN LTF2.Type = 'Slide Creation' 
+        THEN LTF2.SlideName 
+    END) AS SlideCount,
+
+    COUNT(DISTINCT LTF.CountName)
+        + COUNT(DISTINCT LTF.LabTestKey)
+        + COUNT(DISTINCT CASE 
+            WHEN LTF2.Type = 'Block Creation' 
+            THEN LTF2.BlockName 
+          END) AS TotalCount,
+
+    COUNT(DISTINCT LTF.LabTestKey) AS TotalLabTests
+
+FROM dbo.LabTestFact LTF
+
+INNER JOIN dbo.LabDim LD
+    ON LTF.LabDurableKey = LD.DurableKey
+    AND LD.IsCurrent = 1
+
+INNER JOIN dbo.LabTaskFact LTF2
+    ON LTF.LabTestKey = LTF2.LabTestKey
+
+WHERE
+    LTF.FirstReceivedInstant >= @StartDate
+    AND LTF.FirstReceivedInstant < @EndDate
+
+    AND LTF.SourceKey IN
+    (
+        1, 42134, 42135, 42136, 42141, 42142,
+        42143, 42145, 42147, 42148, 42151,
+        42153, 70514, 83993, 83994, 145339,
+        145347, 145373, 145375, 161862, -1, -2
+    )
+
+    AND LD.TypeOfCase IN
+    (
+        'Gynecologic Cytology',
+        'Medical Cytology'
+    )
+
+    AND LTF.PathologyType = 'Anatomic Pathology'
+
+    AND LTF2.Type IN
+    (
+        'Block Creation',
+        'Slide Creation'
+    )
+
+    AND (LTF.CaseStatus <> 'Canceled'
+         OR LTF.CaseStatus IS NULL)
+
+    AND (LTF.SpecimenProtocol <> 'HX Specimen Protocol'
+         OR LTF.SpecimenProtocol IS NULL)
+
+    AND (LTF.OrderDepartmentKey <> 45379
+         OR LTF.OrderDepartmentKey IS NULL);
