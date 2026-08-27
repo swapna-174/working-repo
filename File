@@ -3,13 +3,25 @@ DECLARE @EndDate   DATETIME = '2026-08-01 07:00:00';
 
 SELECT
     COUNT(DISTINCT LTF.CountName) AS CountNameCount,
+
     COUNT(DISTINCT LTF.LabTestKey) AS LabTestCount,
-    COUNT(DISTINCT LTF2.BlockName) AS BlockCount,
-    COUNT(DISTINCT LTF2.SlideName) AS SlideCount,
+
+    COUNT(DISTINCT CASE 
+        WHEN LTF2.Type = 'Block Creation' 
+        THEN LTF2.BlockName 
+    END) AS BlockCount,
+
+    COUNT(DISTINCT CASE 
+        WHEN LTF2.Type = 'Slide Creation' 
+        THEN LTF2.SlideName 
+    END) AS SlideCount,
 
     COUNT(DISTINCT LTF.CountName)
         + COUNT(DISTINCT LTF.LabTestKey)
-        + COUNT(DISTINCT LTF2.BlockName) AS TotalCount,
+        + COUNT(DISTINCT CASE 
+            WHEN LTF2.Type = 'Block Creation' 
+            THEN LTF2.BlockName 
+          END) AS TotalCount,
 
     COUNT(DISTINCT LTF.LabTestKey) AS TotalLabTests
 
